@@ -57,7 +57,7 @@ A user can add or edit personal information in their profile, possibly including
   If a user has entered advisor email into their profile, they may send their schedule to their advisor.
 
 - [ ] **F3 – Schedule Export**   
-  A user can cthoose to export their schedule o an easily readable PDF
+  A user can choose to export their schedule to an easily readable PDF
 
 - [ ] **F4 – Course Overload**   
   A user will be alerted if the scheduled course load is above maximum of credits
