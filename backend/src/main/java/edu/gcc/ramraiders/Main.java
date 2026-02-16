@@ -10,6 +10,5 @@ public class Main {
 
     public void run(){
         //TODO: Implement UI, which handles all interaction between the user and the product, as well as the initial class list consumption
-        //Test for JBlanks Commit
     }
 }
