@@ -3,6 +3,7 @@ import React from 'react';
 function CandidateSchedule({ openModal }) {
   const panelStyle = {
     maxWidth: '800px',
+    width: '100%',
     margin: '0 auto',
     padding: '1.25rem',
     background: '#FFFFFF',

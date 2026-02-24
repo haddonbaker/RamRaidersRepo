@@ -8,6 +8,7 @@ function SearchResults() {
     background: '#FFFFFF',
     border: '1px solid #E5E7EB',
     borderRadius: '12px',
+    width: '100%',
     boxShadow: '0 2px 12px rgba(0, 0, 0, 0.08)',
   };
 

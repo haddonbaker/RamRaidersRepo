@@ -3,11 +3,9 @@ import SearchPanel from './components/SearchPanel';
 import SearchResults from './components/SearchResults.jsx';
 import CandidateSchedule from './components/CandidateSchedule.jsx';
 import WeeklyScheduleModal from './components/WeeklyScheduleModal';
-import FilterModal from './components/FilterModal';
 
 function App() {
   const [showScheduleModal, setShowScheduleModal] = useState(false);
-  const [showFilterModal, setShowFilterModal] = useState(false);
 
   const containerStyle = {
     padding: '1rem 0.75rem',
@@ -25,7 +23,7 @@ function App() {
     <div style={containerStyle}>
       
       {/* Top: Course Search */}
-      <SearchPanel openFilters={() => setShowFilterModal(true)} />
+      <SearchPanel />
 
       {/* Middle: Search Results */}
       <SearchResults />
@@ -35,9 +33,6 @@ function App() {
 
       {/* Weekly Schedule Popup */}
       {showScheduleModal && <WeeklyScheduleModal closeModal={() => setShowScheduleModal(false)} />}
-
-      {/* Filter Modal Popup */}
-      {showFilterModal && <FilterModal closeModal={() => setShowFilterModal(false)} />}
     </div>
   );
 }
