@@ -12,7 +12,26 @@ public class Schedule {
 
     public int add (Course c ){
         //TODO: call checkForConflicts and then add a course object to the schedule or suggest other courses
-        return -1;
+
+
+        //CHECK FOR CONFLICTS
+
+
+        if(checkForConflicts(c)){
+
+            //PRINT SOME SORT OF ERROR MESSAGE
+            //Need some sort of error to send back here, might turn into a try and catch block later
+
+            return -1; //FAIL CASE
+        }else{
+            //ADD THE COURSE TO THE SCHEDULE
+            this.courses.add(c);
+            return 1; //SUCCESS CASE
+
+        }
+
+
+
     }
 
     public int remove (Course c ){
@@ -25,9 +44,15 @@ public class Schedule {
         return -1;
     }
 
-    private int checkForConflicts (Course c, Schedule s){
+    private boolean checkForConflicts (Course c){
         //TODO: check the user's current candidate schedule for conflicts with adding the course c
-        return -1;
+        //This should check the course against the current schedule.
+
+        //capacity check
+
+
+
+        return false;
     }
 
     private ArrayList<Course> suggestAlternatives(Course c, Schedule s){

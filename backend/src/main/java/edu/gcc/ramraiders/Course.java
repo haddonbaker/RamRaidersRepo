@@ -48,6 +48,8 @@ public class Course {
 
     private int maxCapacity; // maximum number of seats in a class
 
+    private int capacity;
+
     private Course[] prerequisites; // an array of prerequisite courses that must be taken before this class
 
 
