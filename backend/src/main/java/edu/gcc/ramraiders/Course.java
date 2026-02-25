@@ -42,13 +42,67 @@ public class Course {
 
     private Set<Day> days; // set of enumerated type days for what days the class meets, e.g. MTWRF
 
+    private int startTime; // Starting time of the class
+
+    private int endTime; //Ending time of the class
+
     private String department; // the department the class lives under
 
     private int numEnrolled; // number of students enrolled in the class
 
     private int maxCapacity; // maximum number of seats in a class
 
+
+
     private Course[] prerequisites; // an array of prerequisite courses that must be taken before this class
+
+    public int getCourseCode() {
+        return courseCode;
+    }
+    public int getReferenceNumber(){
+        return referenceNumber;
+    }
+    public int getCreditHours(){
+        return creditHours;
+    }
+    public String getProfessorName(){
+        return professorName;
+    }
+    public String getCourseDescription(){
+        return courseDescription;
+    }
+    public String getCourseName(){
+        return courseName;
+    }
+    public SectionType getSection(){
+        return section;
+    }
+    public SemesterType getSemester(){
+        return semester;
+    }
+    public Set<Day> getDays(){
+        return days;
+    }
+    public String getDepartment(){
+        return department;
+    }
+    public int getNumEnrolled(){
+        return numEnrolled;
+    }
+    public int getMaxCapacity(){
+        return maxCapacity;
+    }
+    public Course[] getPrerequisites(){
+        return prerequisites;
+    }
+    public int getStartTime(){
+        return startTime;
+    }
+    public int getEndTime(){
+        return endTime;
+    }
+
+
 
 
 }
