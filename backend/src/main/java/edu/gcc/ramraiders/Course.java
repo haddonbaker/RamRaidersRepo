@@ -2,8 +2,6 @@ package edu.gcc.ramraiders;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeParseException;
 import java.util.*;
 
 
@@ -79,20 +77,6 @@ public record Course(
 
     /**
      * Constructor
-     *
-     * @param department      The department name (COMP, ACCT, etc.)
-     * @param code            The 3 digit course number
-     * @param section         The section type (A...Z|_) -- an underscore represents no section
-     * @param name            Course name
-     * @param semester        Semester
-     * @param year            Year of the course
-     * @param professorNames  names of professors teaching the course
-     * @param meetingTimes    The weekly meeting times
-     * @param openSeats       Number of open seats in a course
-     * @param maxCapacity     Maximum number of seats in a course
-     * @param referenceNumber The 5-digit identifier (TODO)
-     * @param prerequisites   The prerequisites (TODO)
-     * @param description     A more detailed description (TODO)
      */
     public Course {
         // This prints error messages if any of the course fields failed to parse.
