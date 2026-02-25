@@ -17,11 +17,11 @@ public class Schedule {
         //CHECK FOR CONFLICTS
 
 
-        if(checkForConflicts(c)){
+        if(isConflict(c)){
 
             //PRINT SOME SORT OF ERROR MESSAGE
             //Need some sort of error to send back here, might turn into a try and catch block later
-
+            suggestAlternatives(c);
             return -1; //FAIL CASE
         }else{
             //ADD THE COURSE TO THE SCHEDULE
@@ -44,18 +44,43 @@ public class Schedule {
         return -1;
     }
 
-    private boolean checkForConflicts (Course c){
+    private boolean isConflict (Course c){
         //TODO: check the user's current candidate schedule for conflicts with adding the course c
         //This should check the course against the current schedule.
+        //***MIGHT NEED to take in the STUDENT object to check for classes***
+
 
         //capacity check
+        if(c.getNumEnrolled() + 1 > c.getMaxCapacity()){
+            return true;
+        }
+        //PreReq Check
+        /*if(c.getPrerequisites()){
+            return true;
+        }*/
+        //Timing Check
+
+        int startTime = c.getStartTime();
+        int endTime = c.getEndTime();
+
+        for(int i = 0; i < courses.size(); i++){
+            if (courses.get(i).getStartTime() == startTime){
+                return true;
+                //Set some error
+            }
+            //There will be more logic with this it wont be finished yet
+        }
 
 
 
-        return false;
+
+
+
+        //Default to true
+        return true;
     }
 
-    private ArrayList<Course> suggestAlternatives(Course c, Schedule s){
+    private ArrayList<Course> suggestAlternatives(Course c){
         // TODO: take the course and schedule, find classes that are similar and do not conflict
         return new ArrayList<Course>();
     }
