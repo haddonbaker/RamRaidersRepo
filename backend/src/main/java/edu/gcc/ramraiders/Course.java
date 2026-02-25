@@ -52,5 +52,50 @@ public class Course {
 
     private Course[] prerequisites; // an array of prerequisite courses that must be taken before this class
 
+    public int getCourseCode() {
+        return courseCode;
+    }
+    public int getReferenceNumber(){
+        return referenceNumber;
+    }
+    public int getCreditHours(){
+        return creditHours;
+    }
+    public String getProfessorName(){
+        return professorName;
+    }
+    public String getCourseDescription(){
+        return courseDescription;
+    }
+    public String getCourseName(){
+        return courseName;
+    }
+    public SectionType getSection(){
+        return section;
+    }
+    public SemesterType getSemester(){
+        return semester;
+    }
+    public Set<Day> getDays(){
+        return days;
+    }
+    public String getDepartment(){
+        return department;
+    }
+    public int getNumEnrolled(){
+        return numEnrolled;
+    }
+    public int getMaxCapacity(){
+        return maxCapacity;
+    }
+    public int getCapacity(){
+        return capacity;
+    }
+    public Course[] getPrerequisites(){
+        return prerequisites;
+    }
+
+
+
 
 }
