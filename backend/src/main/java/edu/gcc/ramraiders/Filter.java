@@ -1,24 +1,33 @@
 package edu.gcc.ramraiders;
+
 import java.util.Set;
 import java.util.Date;
 
-public class Filter {
-
-    /// Selects a course if its number of credit hours is in this set
-    private Set<Integer> creditHours;
-
-    /// Selects a course if its department is in this set
-    private Set<String> departments;
-
-    /// Selects a Course if its professors is in this set
-    private Set<String> professors;
-
-    /// Selects a Course if it has a minimum number of available slots
-    private int availableSlots;
-
-    /// Selects a Course if its meeting time is in this set
-    private Set<Date> times;
-
-    /// Selects a Course if one of its prerequisites is in this set
-    private Set<Course> prerequisites;
+/**
+ * @param creditHours Selects a course if its number of credit hours is in this set. e.g: [3, 4, 5]
+ * @param departments Selects a course if its department is in this set
+ * @param professors Selects a Course if a string in this set is a substring of any course's professor names
+ * @param isAvailable Selects a Course if it has available seats
+ * @param timeslots Selects a Course if its meeting time fits into one of the timeslots
+ * @param prerequisites Selects a Course if one of its prerequisites is in this set
+ * @param semesters Selects a course if it's in a given semester
+ * @param years Selects a course if it's in a given year
+ * @param codes Selects a course if it has a code (e.g. 101 returns all 101 courses)
+ * @param keywords Select a course if any string in keywords is a substring of the course name
+ *
+ * @apiNote Any null value means that attribute is not being searched for
+ */
+public record Filter(
+        Set<String> departments,
+        Set<Integer> codes,
+        Set<String> keywords,
+        Set<Course.SemesterType> semesters,
+        Set<Integer> years,
+        Set<String> professors,
+        Set<Timeslot> timeslots,
+        Set<Integer> creditHours,
+        Boolean isAvailable,
+        Set<Course> prerequisites
+) {
+    public record Timeslot(int hour, int minute, int length) {}
 }

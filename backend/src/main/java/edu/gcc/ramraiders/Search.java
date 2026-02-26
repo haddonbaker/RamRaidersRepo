@@ -1,26 +1,22 @@
 package edu.gcc.ramraiders;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Search {
 
-    // the list of courses returned by a search
-    private Map<String, Course> courses;
+    private Set<Course> results;
 
-
-
-    public Map<String, Course> getCourses (Filter filter){
-        // TODO: call private method applyFilters to search the course database and return info
-        return null;
+    /**
+     * @return The courses selected by the current filter
+     */
+    public Set<Course> getCourses() {
+        return results;
     }
 
-    private Map<String, Course> applyFilters (Filter filter) {
-        //TODO: apply filters to course database, return course list
-        return null;
+    /**
+     * Updates the search results' filter
+     * @param filter The filter
+     */
+    public void applyFilter(Filter filter) {
     }
-
-
 }
