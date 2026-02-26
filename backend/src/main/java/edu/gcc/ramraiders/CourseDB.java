@@ -1,6 +1,7 @@
 package edu.gcc.ramraiders;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -14,6 +15,13 @@ public class CourseDB {
 
     private static CourseDB INSTANCE = null;
     private final List<Course> courseList = new ArrayList<>();
+
+
+    private final Map<String, Set<Course>> departmentToCourse = new HashMap<>();
+    private final Map<Integer, Set<Course>> codeToCourse = new HashMap<>();
+    private final Map<Course.SemesterType, Set<Course>> semesterToCourse = new HashMap<>();
+    private final Map<Integer, Set<Course>> yearToCourse = new HashMap<>();
+    private final Map<Integer, Set<Course>> creditsToCourse = new HashMap<>();
 
     /**
      * Loads the course data and returns an instance of CourseDB. This can only be done once.
@@ -50,16 +58,77 @@ public class CourseDB {
                 courseList.add(course);
             }
         }
+        // Populate the lookup tables
+        for (var course : courseList) {
+            departmentToCourse.putIfAbsent(course.department(), new HashSet<>());
+            departmentToCourse.get(course.department()).add(course);
+
+            codeToCourse.putIfAbsent(course.code(), new HashSet<>());
+            codeToCourse.get(course.code()).add(course);
+
+            semesterToCourse.putIfAbsent(course.semester(), new HashSet<>());
+            semesterToCourse.get(course.semester()).add(course);
+
+            yearToCourse.putIfAbsent(course.year(), new HashSet<>());
+            yearToCourse.get(course.year()).add(course);
+
+            creditsToCourse.putIfAbsent(course.credits(), new HashSet<>());
+            creditsToCourse.get(course.credits()).add(course);
+        }
+    }
+
+    /**
+     * @param department The department
+     * @return The set of courses under the specific department
+     */
+    @NotNull
+    public Set<Course> getCoursesByDepartment(String department) {
+        return departmentToCourse.getOrDefault(department, new HashSet<>());
+    }
+
+    /**
+     * @param code The code
+     * @return The set of courses with a specific code
+     */
+    @NotNull
+    public Set<Course> getCoursesByCode(int code) {
+        return codeToCourse.getOrDefault(code, new HashSet<>());
+    }
+
+    /**
+     * @param semesterType The semester
+     * @return The set of courses in a specific semester
+     */
+    @NotNull
+    public Set<Course> getCoursesBySemester(Course.SemesterType semesterType) {
+        return semesterToCourse.getOrDefault(semesterType, new HashSet<>());
+    }
+
+    /**
+     * @param year The year
+     * @return The set of courses in a specific year
+     */
+    @NotNull
+    public Set<Course> getCoursesByYear(int year) {
+        return yearToCourse.getOrDefault(year, new HashSet<>());
+    }
+
+    /**
+     * @param credits The credits
+     * @return The set of courses with a specific amount of credits
+     */
+    @NotNull
+    public Set<Course> getCoursesByCredits(int credits) {
+        return creditsToCourse.getOrDefault(credits, new HashSet<>());
     }
 
     /**
      * @return The list of courses
      */
+    @NotNull
     public List<Course> getCourseList() {
         return courseList;
     }
-
-    // TODO: Query methods
 
 
     // Helper functions
@@ -82,6 +151,7 @@ public class CourseDB {
                     parseYear(obj),
                     parseProfessorNames(obj),
                     parseMeetingTimes(obj),
+                    (Integer) obj.get("credits"),
                     (Integer) obj.get("open_seats"),
                     (Integer) obj.get("total_seats"),
                     0,

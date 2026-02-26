@@ -31,6 +31,7 @@ public record Course(
         Integer year,
         Set<String> professorNames,
         Set<MeetingTime> meetingTimes,
+        Integer credits,
         Integer openSeats,
         Integer maxCapacity,
         Integer referenceNumber,
@@ -96,6 +97,8 @@ public record Course(
                 String.format("Invalid course professors for %s %d %c %s", department, code, section, name));
         Objects.requireNonNull(meetingTimes,
                 String.format("Invalid course meeting for %s %d %c %s", department, code, section, name));
+        Objects.requireNonNull(credits,
+                String.format("Invalid credit hours for %s %d %c %s", department, code, section, name));
         Objects.requireNonNull(openSeats,
                 String.format("Invalid course open seats for %s %d %c %s", department, code, section, name));
         Objects.requireNonNull(maxCapacity,

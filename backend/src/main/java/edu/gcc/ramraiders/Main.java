@@ -13,22 +13,22 @@ public class Main {
 
     private static final int PORT = 7000;
 
+    public static CourseDB courseDB;
 
     public static void main(String[] args) throws IOException {
 
-        CourseDB courseDB = CourseDB.init();
+        courseDB = CourseDB.init();
         if (courseDB == null) {
             System.err.println("Failed to load course data");
             System.exit(-1);
         }
 
-        System.out.println(courseDB.getCourseList().size());
-        String workingDir = System.getProperty("user.dir");
-        String frontendDir = Paths.get(workingDir, "..", "frontend", "frontend").normalize().toString();
-        System.out.println("Frontend directory: " + frontendDir);
-
         Javalin.create(config -> {
-            config.staticFiles.add(frontendDir, Location.EXTERNAL);
+            config.staticFiles.add(staticFileConfig -> {
+                staticFileConfig.hostedPath = "/";
+                staticFileConfig.directory = "../frontend/frontend";
+                staticFileConfig.location = Location.EXTERNAL;
+            });
         }).start(PORT);
 
         // TODO: Endpoints
