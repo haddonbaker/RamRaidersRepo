@@ -51,7 +51,7 @@ public class Schedule {
 
 
         //capacity check
-        if(c.getNumEnrolled() + 1 > c.getMaxCapacity()){
+        if (c.openSeats() > 0){
             return true;
         }
         //PreReq Check
@@ -60,17 +60,19 @@ public class Schedule {
         }*/
         //Timing Check
 
-        int startTime = c.getStartTime();
-        int endTime = c.getEndTime();
+        // FIXME: This needs to be rewritten, courses don't have one "start time" and "end time", they have a list of meeting times
 
-        for(int i = 0; i < courses.size(); i++){
-            if (courses.get(i).getStartTime() == startTime){
-                return true;
-                //Set some error
-            }
-            //There will be more logic with this it wont be finished yet
-        }
-
+//        int startTime = c.getStartTime();
+//        int endTime = c.getEndTime();
+//
+//        for(int i = 0; i < courses.size(); i++){
+//            if (courses.get(i).getStartTime() == startTime){
+//                return true;
+//                //Set some error
+//            }
+//            //There will be more logic with this it wont be finished yet
+//        }
+//
 
 
 
