@@ -24,11 +24,6 @@ public class Main {
         }
 
         Javalin.create(config -> {
-            config.staticFiles.add(staticFileConfig -> {
-                staticFileConfig.hostedPath = "/";
-                staticFileConfig.directory = "../frontend/frontend";
-                staticFileConfig.location = Location.EXTERNAL;
-            });
         }).start(PORT);
 
         // TODO: Endpoints
