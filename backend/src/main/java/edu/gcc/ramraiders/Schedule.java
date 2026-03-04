@@ -6,10 +6,16 @@ public class Schedule {
 
     private ArrayList<Course> courses = new ArrayList<>();
 
-    private int creditHours;
+    private int totalCredits;
 
     private ArrayList<String> errors = new ArrayList<>();
 
+
+    /**
+     *
+     * @param c The course to be added
+     * @return Returns 1 if successful and -1 if not --> Change to NULL
+     */
     public int add (Course c ){
         //TODO: call checkForConflicts and then add a course object to the schedule or suggest other courses
 
@@ -46,40 +52,39 @@ public class Schedule {
 
     private boolean isConflict (Course c){
         //TODO: check the user's current candidate schedule for conflicts with adding the course c
-        //This should check the course against the current schedule.
-        //***MIGHT NEED to take in the STUDENT object to check for classes***
 
-
-        //capacity check
-        if (c.openSeats() > 0){
+        //Checks the seats
+        if(c.openSeats() <= 0){
             return true;
         }
-        //PreReq Check
-        /*if(c.getPrerequisites()){
-            return true;
-        }*/
-        //Timing Check
 
-        // FIXME: This needs to be rewritten, courses don't have one "start time" and "end time", they have a list of meeting times
+        //Checks for time overlaps
+        for (Course.MeetingTime mt1 : c.meetingTimes()) {
+            for(int i = 0; i < courses.size(); i++) {
+                Course a =  courses.get(i);
+                for (Course.MeetingTime mt2 : a.meetingTimes()) {
+                    //Checks if on the same day otherwise doesn't matter
+                    if (mt1.day() == mt2.day()) {
 
-//        int startTime = c.getStartTime();
-//        int endTime = c.getEndTime();
-//
-//        for(int i = 0; i < courses.size(); i++){
-//            if (courses.get(i).getStartTime() == startTime){
-//                return true;
-//                //Set some error
-//            }
-//            //There will be more logic with this it wont be finished yet
-//        }
-//
+                        int start1 = mt1.hour() * 60 + mt1.minute();
+                        int end1 = start1 + mt1.minutesLong();
+
+                        int start2 = mt2.hour() * 60 + mt2.minute();
+                        int end2 = start2 + mt2.minutesLong();
+
+                        // Overlap condition
+                        if (start1 < end2 && start2 < end1) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
 
 
 
-
-
-        //Default to true
-        return true;
+        //Made it through all the checks must be correct
+        return false;
     }
 
     private ArrayList<Course> suggestAlternatives(Course c){
@@ -87,8 +92,17 @@ public class Schedule {
         return new ArrayList<Course>();
     }
 
-    public int getCreditHours(Schedule s){
+    public int getTotalCredits(){
         // TODO: return the private creditHours variable
-        return -1;
+
+        int totalCred = 0;
+        for(int i = 0; i < courses.size(); i++){
+            Course a = courses.get(i);
+            int cred = a.credits();
+            totalCred += cred;
+        }
+        return totalCred;
     }
+
+
 }
