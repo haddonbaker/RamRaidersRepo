@@ -18,13 +18,7 @@ public class Schedule {
      */
     public int add (Course c ){
         //TODO: call checkForConflicts and then add a course object to the schedule or suggest other courses
-
-
-        //CHECK FOR CONFLICTS
-
-
         if(isConflict(c)){
-
             //PRINT SOME SORT OF ERROR MESSAGE
             //Need some sort of error to send back here, might turn into a try and catch block later
             suggestAlternatives(c);
@@ -35,13 +29,19 @@ public class Schedule {
             return 1; //SUCCESS CASE
 
         }
-
-
-
     }
 
     public int remove (Course c ){
         //TODO: remove a course object from the schedule
+
+        if (courses.contains(c)){
+            //Probably need to check if removing this class goes below the min number of credits
+            courses.remove(c);
+        }else{
+            //Throw an error, you can't remove a class you dont have
+            //Stub print
+            System.out.println("Course not found");
+        }
         return -1;
     }
 
@@ -52,13 +52,12 @@ public class Schedule {
 
     private boolean isConflict (Course c){
         //TODO: check the user's current candidate schedule for conflicts with adding the course c
-
         //Checks the seats
         if(c.openSeats() <= 0){
             return true;
         }
-
         //Checks for time overlaps
+        //Also I dont think we need to check for semester because I am assuming the scheduling is all for the next semster but I can add quickly if we need
         for (Course.MeetingTime mt1 : c.meetingTimes()) {
             for(int i = 0; i < courses.size(); i++) {
                 Course a =  courses.get(i);
@@ -81,7 +80,13 @@ public class Schedule {
             }
         }
 
+        //Checks if exceeds max number of non extra payed credits
+        if((getTotalCredits() + c.credits()) > 18){
+            //Trigger warning for taking over 18 credits
 
+            //This is part of the backlog
+            System.out.println("Warning! Taking over 18 credits");
+        }
 
         //Made it through all the checks must be correct
         return false;
@@ -101,6 +106,7 @@ public class Schedule {
             int cred = a.credits();
             totalCred += cred;
         }
+        totalCredits = totalCred;
         return totalCred;
     }
 
