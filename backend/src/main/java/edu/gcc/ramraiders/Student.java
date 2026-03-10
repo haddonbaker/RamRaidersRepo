@@ -15,6 +15,11 @@ public class Student {
 
     private String[] minor; // the user's declared minor(s)
 
+    public void setMySchedule(Schedule s) {
+        this.mySchedule = s;
+
+    }
+
     public int login(String username, String password){
         //TODO: check the user's credentials against the accounts that exist already
         return -1;

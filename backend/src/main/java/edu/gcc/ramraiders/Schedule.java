@@ -47,6 +47,7 @@ public class Schedule {
 
     public int save (Schedule c, Student s){
         //TODO: allow a user to save a schedule
+        s.setMySchedule(c);
         return -1;
     }
 
@@ -57,7 +58,7 @@ public class Schedule {
             return true;
         }
         //Checks for time overlaps
-        //Also I dont think we need to check for semester because I am assuming the scheduling is all for the next semster but I can add quickly if we need
+        //Also I don't think we need to check for semester because I am assuming the scheduling is all for the next semster, but I can add quickly if we need
         for (Course.MeetingTime mt1 : c.meetingTimes()) {
             for(int i = 0; i < courses.size(); i++) {
                 Course a =  courses.get(i);

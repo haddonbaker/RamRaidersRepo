@@ -23,9 +23,10 @@ public class Main {
             System.exit(-1);
         }
 
-        Javalin.create(config -> {
+        Javalin app = Javalin.create(config -> {
         }).start(PORT);
 
-        // TODO: Endpoints
+        SearchController.registerRoutes(app);
+
     }
 }
