@@ -6,6 +6,10 @@ public class Search {
 
     private Set<Course> results;
 
+    public Search(List<Course> courseList) {
+        this.results = new HashSet<>(courseList);
+    }
+
     /**
      * @return The courses selected by the current filter
      */
