@@ -24,21 +24,6 @@ public class SearchController {
             ctx.json(search.search(request.query, request.filter));
         });
 
-        app.get("/search", ctx -> {
-            String query = ctx.queryParam("q");
-
-            if (query == null || query.isEmpty()) {
-                ctx.status(400).json(Map.of("status", "error", "message", "Query parameter 'q' is required"));
-                return;
-            }
-
-            List<Course> results = Objects.requireNonNull(CourseDB.init()).getCourseList().stream()
-                    .filter(c -> c.name().toLowerCase().contains(query.toLowerCase()) ||
-                            c.department().toLowerCase().contains(query.toLowerCase()))
-                    .collect(Collectors.toList());
-            ctx.json(results);
-        });
-
         app.post("/calendar", ctx -> {
             Map<String, Object> body = ctx.bodyAsClass(Map.class);  // ✅ Read once
 
