@@ -6,48 +6,22 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class SearchController {
+    private static Search search;
+    private record SearchRequest(String query, Filter filter) { }
+
+
     public static void registerRoutes(Javalin app) {
+        search = new Search();
 
         app.get("/courses", ctx -> {
-            List<Course> allCourses = Objects.requireNonNull(CourseDB.init()).getCourseList();
+            List<Course> allCourses = Main.courseDB.getCourseList();
             ctx.json(allCourses);
         });
 
-        app.post("/results", ctx -> {
-            // Parses the JSON body into Filter object
-            Filter filter = ctx.bodyAsClass(Filter.class);
-            Search search = new Search(Objects.requireNonNull(CourseDB.init()).getCourseList());
-            search.applyFilter(filter);
-            ctx.json(search.getCourses());
-        });
-
-        app.get("/fltr", ctx -> {
-            Map<String, Object> filterOptions = new HashMap<>();
-            List<Course> allCourses = Objects.requireNonNull(CourseDB.init()).getCourseList();
-
-            // Departments: this on should get unique department codes
-            filterOptions.put("departments", allCourses.stream()
-                    .map(Course::department)
-                    .distinct()
-                    .sorted()
-                    .collect(Collectors.toList()));
-
-            // Meeting Times: It should extract unique time slots
-            filterOptions.put("meetingTimes", allCourses.stream()
-                    .flatMap(c -> c.meetingTimes().stream())
-                    .distinct()
-                    .sorted(Comparator.comparingInt(Course.MeetingTime::hour)
-                            .thenComparingInt(Course.MeetingTime::minute))
-                    .collect(Collectors.toList()));
-
-            // Reference Numbers: ought to extract unique course reference numbers
-            filterOptions.put("referenceNumbers", allCourses.stream()
-                    .map(Course::referenceNumber)
-                    .distinct()
-                    .sorted()
-                    .collect(Collectors.toList()));
-
-            ctx.json(filterOptions);
+        app.post("/search", ctx -> {
+            // No error handling necessary: malformed JSON automatically returns a 400 error code with Javalin
+            var request = ctx.bodyAsClass(SearchRequest.class);
+            ctx.json(search.search(request.query, request.filter));
         });
 
         app.get("/search", ctx -> {

@@ -14,23 +14,12 @@ public class Search {
         filteredResults.addAll(results);
     }
 
-    public Search(List<Course> courseList) {
-        this.results = new HashSet<>(courseList);
-    }
-
     /**
-     * @return The courses selected by the current filter
+     * Updates the search results' query and filter and returns a set of courses
+     * @param query The query (empty string is equivalent to the entire course list)
+     * @param filter The filter (filters what is returned by the query)
      */
-    public Set<Course> getCourses() {
-        return filteredResults;
-    }
-
-    /**
-     * Updates the search results' filter
-     *
-     * @param filter The filter
-     */
-    public Search applyFilter(String query, Filter filter) {
+    public Set<Course> search(String query, Filter filter) {
         // Apply query
         if (!query.equals(currentQuery)) {
             results.clear();
@@ -56,10 +45,10 @@ public class Search {
             currentFilter = filter;
             filteredResults.removeIf(course -> {
                 if ((!filter.departments().isEmpty() && !filter.departments().contains(course.department()))
-                        || (!filter.codes().isEmpty() && !filter.codes().contains(course.code()))
-                        || (!filter.semesters().isEmpty() && !filter.semesters().contains(course.semester()))
-                        || (!filter.years().isEmpty() && !filter.years().contains(course.year()))
-                        || (!filter.creditHours().isEmpty() && !filter.creditHours().contains(course.credits()))
+                || (!filter.codes().isEmpty() && !filter.codes().contains(course.code()))
+                || (!filter.semesters().isEmpty() && !filter.semesters().contains(course.semester()))
+                || (!filter.years().isEmpty() && !filter.years().contains(course.year()))
+                || (!filter.creditHours().isEmpty() && !filter.creditHours().contains(course.credits()))
                 ) {
                     return true;
                 }
@@ -70,7 +59,7 @@ public class Search {
                 return !fitsAnyTimeslot;
             });
         }
-        return this;
+        return filteredResults;
     }
 
     private static boolean fitsAnyTimeslot(Filter filter, Course course) {
