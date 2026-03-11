@@ -1,8 +1,6 @@
 package edu.gcc.ramraiders;
 
-import java.util.HashSet;
 import java.util.Set;
-import java.util.Date;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -30,7 +28,7 @@ public record Filter(
         Boolean isAvailable,
         Set<Course> prerequisites
 ) {
-    public record Timeslot(int hour, int minute, int length) {}
+    public record Timeslot(Course.Day day, int hour, int minute, int length) {}
 
     /**
      * @return A new Filter which is this filter combined with another filter.
