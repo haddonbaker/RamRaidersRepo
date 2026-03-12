@@ -3,20 +3,21 @@ package edu.gcc.ramraiders;
 import io.javalin.Javalin;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class SearchController {
-    private static Search search;
-    private static Schedule globalSchedule = new Schedule();
+    public static Search search;
+    private static CourseDB courseDB;
+    private static final Schedule globalSchedule = new Schedule();
 
     private record SearchRequest(String query, Filter filter) { }
 
 
-    public static void registerRoutes(Javalin app) {
-        search = new Search();
+    public static void registerRoutes(Javalin app, CourseDB courseDB) {
+        search = new Search(courseDB);
+        SearchController.courseDB = courseDB;
 
         app.get("/courses", ctx -> {
-            List<Course> allCourses = Main.courseDB.getCourseList();
+            List<Course> allCourses = courseDB.getCourseList();
             ctx.json(allCourses);
         });
 
@@ -26,7 +27,16 @@ public class SearchController {
             ctx.json(search.search(request.query, request.filter));
         });
 
+        app.get("/years", ctx -> ctx.json(SearchController.courseDB.getPossibleYears()));
+
+        app.get("/departments", ctx -> ctx.json(SearchController.courseDB.getPossibleDepartments()));
+
+        app.get("/credits", ctx -> ctx.json(SearchController.courseDB.getPossibleCredits()));
+
+        app.get("/professors", ctx-> ctx.json(SearchController.courseDB.getPossibleProfessors()));
+
         app.post("/addToCalendar", ctx -> {
+            @SuppressWarnings("unchecked")
             Map<String, Object> body = ctx.bodyAsClass(Map.class);
 
             //from what I saw this can turn maps into objects
@@ -62,6 +72,7 @@ public class SearchController {
         });
 
         app.delete("/removeFromCalendar", ctx -> { // This is where the user was editing
+            @SuppressWarnings("unchecked")
             Map<String, Object> body = ctx.bodyAsClass(Map.class);
 
             com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
@@ -77,8 +88,6 @@ public class SearchController {
             }
         });
 
-        app.get("/schedule", ctx -> {
-            ctx.json(globalSchedule);
-        });
+        app.get("/schedule", ctx -> ctx.json(globalSchedule));
     }
 }
