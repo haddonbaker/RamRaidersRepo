@@ -1,7 +1,9 @@
 package edu.gcc.ramraiders;
 
 import java.util.ArrayList;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class Schedule {
 
     private ArrayList<Course> courses = new ArrayList<>();
@@ -38,7 +40,7 @@ public class Schedule {
             //Probably need to check if removing this class goes below the min number of credits
             courses.remove(c);
         }else{
-            //Throw an error, you can't remove a class you dont have
+            //Throw an error, you can't remove a class you don't have
             //Stub print
             System.out.println("Course not found");
         }
@@ -109,6 +111,10 @@ public class Schedule {
         }
         totalCredits = totalCred;
         return totalCred;
+    }
+
+    public ArrayList<Course> getCourses() {
+        return courses;
     }
 
 

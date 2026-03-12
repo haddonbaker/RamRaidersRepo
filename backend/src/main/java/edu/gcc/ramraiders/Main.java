@@ -7,6 +7,7 @@ import java.nio.file.Paths;
 import java.util.*;
 
 import io.javalin.http.staticfiles.Location;
+import io.javalin.plugin.bundled.CorsPluginConfig;
 
 
 public class Main {
@@ -24,9 +25,11 @@ public class Main {
         }
 
         Javalin app = Javalin.create(config -> {
+            config.bundledPlugins.enableCors(cors ->{
+                cors.addRule(CorsPluginConfig.CorsRule::anyHost);
+            });
+
         }).start(PORT);
-
         SearchController.registerRoutes(app);
-
     }
 }
