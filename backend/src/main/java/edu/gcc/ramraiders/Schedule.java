@@ -1,5 +1,12 @@
 package edu.gcc.ramraiders;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 
@@ -48,9 +55,57 @@ public class Schedule {
     }
 
     public int save (Schedule c, Student s){
-        //TODO: allow a user to save a schedule
-        s.setMySchedule(c);
-        return -1;
+        // Associate schedule with student in memory
+
+        Path dir = Paths.get("schedules");
+        try {
+            Files.createDirectories(dir);
+
+            int idx = 1;
+            Path filePath = null;
+            while (idx < Integer.MAX_VALUE) {
+                Path candidate = dir.resolve("schedule" + idx + ".txt");
+                try {
+                    // fails if the file exists
+                    filePath = Files.createFile(candidate);
+                    break;
+                } catch (FileAlreadyExistsException ex) {
+                    idx++;
+                }
+            }
+
+            if (filePath == null) {
+                return -1;
+            }
+
+            try (BufferedWriter w = Files.newBufferedWriter(filePath, StandardCharsets.UTF_8)) {
+                // puts the studnt name at the top
+                String username = (s.getUsername() != null) ? s.getUsername() : "Unknown";
+                w.write("Student: " + username);
+                w.newLine();
+                w.newLine();
+
+                // Schedule contents
+                w.write("Schedule:");
+                w.newLine();
+
+                if (c != null && c.getCourses() != null && !c.getCourses().isEmpty()) {
+                    for (Course cr : c.getCourses()) {
+                        w.write(cr.toString());
+                        w.newLine();
+                    }
+                } else {
+                    w.write("(no courses)");
+                    w.newLine();
+                }
+            }
+
+            // a great success!
+            return 1;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return -1;
+        }
     }
 
     private boolean isConflict (Course c){

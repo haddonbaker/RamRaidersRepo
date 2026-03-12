@@ -29,4 +29,8 @@ public class Student {
         //TODO: clear username and password from variables
         return -1;
     }
+
+    public String getUsername() {
+        return username;
+    }
 }
