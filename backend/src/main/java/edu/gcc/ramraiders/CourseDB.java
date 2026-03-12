@@ -21,6 +21,12 @@ public class CourseDB {
     private final Map<Integer, Set<Course>> yearToCourse = new HashMap<>();
     private final Map<Integer, Set<Course>> creditsToCourse = new HashMap<>();
 
+    private final Set<String> possibleDepartments = new TreeSet<>();
+    private final Set<Integer> possibleCredits = new TreeSet<>();
+    private final Set<Integer> possibleYears = new TreeSet<>();
+    private final Set<String> possibleProfessors = new TreeSet<>();
+    private final Set<String> possibleCourseNames = new TreeSet<>();
+
     /**
      * Loads the course data and returns an instance of CourseDB. This can only be done once.
      *
@@ -60,6 +66,7 @@ public class CourseDB {
         for (var course : courseList) {
             departmentToCourse.putIfAbsent(course.department(), new HashSet<>());
             departmentToCourse.get(course.department()).add(course);
+            possibleDepartments.add(course.department());
 
             codeToCourse.putIfAbsent(course.code(), new HashSet<>());
             codeToCourse.get(course.code()).add(course);
@@ -69,10 +76,50 @@ public class CourseDB {
 
             yearToCourse.putIfAbsent(course.year(), new HashSet<>());
             yearToCourse.get(course.year()).add(course);
+            possibleYears.add(course.year());
 
             creditsToCourse.putIfAbsent(course.credits(), new HashSet<>());
             creditsToCourse.get(course.credits()).add(course);
+            possibleCredits.add(course.credits());
+
+            possibleProfessors.addAll(course.professorNames());
+            possibleCourseNames.add(course.name());
         }
+    }
+
+    /**
+     * @return The set of possible departments in the course collection
+     */
+    public Set<String> getPossibleDepartments() {
+        return possibleDepartments;
+    }
+
+    /**
+     * @return The set of possible numbers of credits in the course selection
+     */
+    public Set<Integer> getPossibleCredits() {
+        return possibleCredits;
+    }
+
+    /**
+     * @return The set of possible years in the course selection
+     */
+    public Set<Integer> getPossibleYears() {
+        return possibleYears;
+    }
+
+    /**
+     * @return The set of possible professors in the course selection
+     */
+    public Set<String> getPossibleProfessors() {
+        return possibleProfessors;
+    }
+
+    /**
+     * @return The set of possible course names in the course selection
+     */
+    public Set<String> getPossibleCourseNames() {
+        return possibleCourseNames;
     }
 
     /**

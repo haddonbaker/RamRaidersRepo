@@ -14,11 +14,10 @@ public class Main {
 
     private static final int PORT = 7000;
 
-    public static CourseDB courseDB;
 
     public static void main(String[] args) throws IOException {
 
-        courseDB = CourseDB.init();
+        var courseDB = CourseDB.init();
         if (courseDB == null) {
             System.err.println("Failed to load course data");
             System.exit(-1);
@@ -30,6 +29,6 @@ public class Main {
             });
 
         }).start(PORT);
-        SearchController.registerRoutes(app);
+        SearchController.registerRoutes(app, courseDB);
     }
 }
