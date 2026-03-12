@@ -1,7 +1,5 @@
 package edu.gcc.ramraiders;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.*;
 
 
@@ -37,7 +35,8 @@ public record Course(
         Integer referenceNumber,
         Set<Course> prerequisites,
         String description
-) {
+) implements Comparable<Course> {
+
 
     /**
      * Defines the possible semesters a course can take place
@@ -54,12 +53,12 @@ public record Course(
      * Defines the days a course can take place
      */
     public enum Day {
+        None,
         Monday,
         Tuesday,
         Wednesday,
         Thursday,
         Friday,
-        None
     }
 
     /**
@@ -108,14 +107,21 @@ public record Course(
     /**
      * @return A string representation of the course
      */
-    @NotNull
     @Override
     public String toString() {
-        return String.format("%s %d %s %s",
+        return String.format("%s %d %s %s %s %d",
                 Objects.requireNonNullElse(department, ""),
                 code,
                 Objects.requireNonNullElse(section, ' '),
-                Objects.requireNonNullElse(name, ""));
+                Objects.requireNonNullElse(name, ""),
+                semester.toString(),
+                year);
     }
+
+    @Override
+    public int compareTo(Course o) {
+        return this.toString().compareTo(o.toString());
+    }
+
 
 }

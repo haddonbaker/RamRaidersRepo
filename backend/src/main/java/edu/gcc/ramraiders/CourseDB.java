@@ -1,8 +1,6 @@
 package edu.gcc.ramraiders;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -81,7 +79,6 @@ public class CourseDB {
      * @param department The department
      * @return The set of courses under the specific department
      */
-    @NotNull
     public Set<Course> getCoursesByDepartment(String department) {
         return departmentToCourse.getOrDefault(department, new HashSet<>());
     }
@@ -90,7 +87,6 @@ public class CourseDB {
      * @param code The code
      * @return The set of courses with a specific code
      */
-    @NotNull
     public Set<Course> getCoursesByCode(int code) {
         return codeToCourse.getOrDefault(code, new HashSet<>());
     }
@@ -99,7 +95,6 @@ public class CourseDB {
      * @param semesterType The semester
      * @return The set of courses in a specific semester
      */
-    @NotNull
     public Set<Course> getCoursesBySemester(Course.SemesterType semesterType) {
         return semesterToCourse.getOrDefault(semesterType, new HashSet<>());
     }
@@ -108,7 +103,6 @@ public class CourseDB {
      * @param year The year
      * @return The set of courses in a specific year
      */
-    @NotNull
     public Set<Course> getCoursesByYear(int year) {
         return yearToCourse.getOrDefault(year, new HashSet<>());
     }
@@ -117,7 +111,6 @@ public class CourseDB {
      * @param credits The credits
      * @return The set of courses with a specific amount of credits
      */
-    @NotNull
     public Set<Course> getCoursesByCredits(int credits) {
         return creditsToCourse.getOrDefault(credits, new HashSet<>());
     }
@@ -125,7 +118,6 @@ public class CourseDB {
     /**
      * @return The list of courses
      */
-    @NotNull
     public List<Course> getCourseList() {
         return courseList;
     }
@@ -139,7 +131,6 @@ public class CourseDB {
      * @param obj the object
      * @return a course record
      */
-    @Nullable
     private static Course parseCourse(Map<?, ?> obj) {
         try {
             return new Course(
@@ -170,7 +161,6 @@ public class CourseDB {
      * @param m the object
      * @return the section
      */
-    @Nullable
     private static Character parseSection(Map<?, ?> m) {
         try {
             return m.containsKey("section") ? ((String) m.get("section")).charAt(0) : '_';
@@ -185,7 +175,6 @@ public class CourseDB {
      * @param m the object
      * @return the year
      */
-    @Nullable
     private static Integer parseYear(Map<?, ?> m) {
         try {
             return Integer.parseInt(((String) m.get("semester")).split("_")[0]);
@@ -200,7 +189,6 @@ public class CourseDB {
      * @param m the object
      * @return the semester type
      */
-    @Nullable
     private static Course.SemesterType parseSemester(Map<?, ?> m) {
         try {
             final var t = ((String) m.get("semester")).split("_");
@@ -223,7 +211,6 @@ public class CourseDB {
      * @param m The object
      * @return The set of professor names, null if any error occurred in parsing
      */
-    @Nullable
     private static Set<String> parseProfessorNames(Map<?, ?> m) {
         try {
             if (!(m.get("faculty") instanceof ArrayList<?> professorList)) {
@@ -249,7 +236,6 @@ public class CourseDB {
      * @param m The object
      * @return The list of meeting times, null if any error occurred in parsing
      */
-    @Nullable
     private static Set<Course.MeetingTime> parseMeetingTimes(Map<?, ?> m) {
         try {
             var meetingTimes = new HashSet<Course.MeetingTime>();
