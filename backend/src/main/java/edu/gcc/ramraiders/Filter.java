@@ -28,6 +28,18 @@ public record Filter(
         Boolean isAvailable,
         Set<Course> prerequisites
 ) {
+    public Filter {
+        if (departments == null) departments = Set.of();
+        if (codes == null) codes = Set.of();
+        if (semesters == null) semesters = Set.of();
+        if (years == null) years = Set.of();
+        if (professors == null) professors = Set.of();
+        if (timeslots == null) timeslots = Set.of();
+        if (creditHours == null) creditHours = Set.of();
+        if (isAvailable == null) isAvailable = false;
+        if (prerequisites == null) prerequisites = Set.of();
+    }
+
     public record Timeslot(Course.Day day, int hour, int minute, int length) {}
 
     /**

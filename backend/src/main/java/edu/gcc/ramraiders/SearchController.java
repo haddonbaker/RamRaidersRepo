@@ -7,6 +7,8 @@ import java.util.stream.Collectors;
 
 public class SearchController {
     private static Search search;
+    private static Schedule globalSchedule = new Schedule();
+
     private record SearchRequest(String query, Filter filter) { }
 
 
@@ -24,19 +26,19 @@ public class SearchController {
             ctx.json(search.search(request.query, request.filter));
         });
 
-        app.post("/calendar", ctx -> {
-            Map<String, Object> body = ctx.bodyAsClass(Map.class);  // ✅ Read once
+        app.post("/addToCalendar", ctx -> {
+            Map<String, Object> body = ctx.bodyAsClass(Map.class);
 
             //from what I saw this can turn maps into objects
             com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
 
 
-            Schedule schedule = mapper.convertValue(body.get("schedule"), Schedule.class);
+            // Schedule schedule = mapper.convertValue(body.get("schedule"), Schedule.class); // Use global schedule instead
             Course courseToAdd = mapper.convertValue(body.get("course"), Course.class);
 
-            int result = schedule.add(courseToAdd);
+            int result = globalSchedule.add(courseToAdd);
             if (result == 1) {
-                ctx.json(Map.of("status", "success", "schedule", schedule));
+                ctx.json(Map.of("status", "success", "schedule", globalSchedule));
             } else {
                 ctx.status(400).json(Map.of("status", "error", "message", "Conflict or full capacity"));
             }
@@ -59,5 +61,24 @@ public class SearchController {
             }
         });
 
+        app.delete("/removeFromCalendar", ctx -> { // This is where the user was editing
+            Map<String, Object> body = ctx.bodyAsClass(Map.class);
+
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+
+            // Schedule schedule = mapper.convertValue(body.get("schedule"), Schedule.class); // Use global schedule
+            Course courseToRemove = mapper.convertValue(body.get("course"), Course.class);
+
+            int result = globalSchedule.remove(courseToRemove);
+            if (result == 1) {
+                ctx.json(Map.of("status", "success", "schedule", globalSchedule));
+            } else {
+                ctx.status(400).json(Map.of("status", "error", "message", "Course not found in schedule"));
+            }
+        });
+
+        app.get("/schedule", ctx -> {
+            ctx.json(globalSchedule);
+        });
     }
 }
