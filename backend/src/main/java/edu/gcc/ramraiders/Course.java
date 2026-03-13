@@ -5,7 +5,7 @@ import java.util.*;
 
 /**
  * Stores all information relating to a course
- *
+ * @param id              The id of the course(How we remove and add)
  * @param department      The department name (COMP, ACCT, etc.)
  * @param code            The 3 digit course number aaa
  * @param section         The section type (A...Z|_) -- an underscore represents no section
@@ -21,6 +21,7 @@ import java.util.*;
  * @param description     A more detailed description (TODO)
  */
 public record Course(
+        String id,
         String department,
         Integer code,
         Character section,
@@ -102,6 +103,10 @@ public record Course(
                 String.format("Invalid course open seats for %s %d %c %s", department, code, section, name));
         Objects.requireNonNull(maxCapacity,
                 String.format("Invalid course capacity for %s %d %c %s", department, code, section, name));
+    }
+
+    public String getId(){
+        return department + code +"-"+section;
     }
 
     /**

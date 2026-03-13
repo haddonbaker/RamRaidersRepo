@@ -26,32 +26,33 @@ public class Schedule {
      * @return Returns 1 if successful and -1 if not --> Change to NULL
      */
     public int add (Course c ){
-        //TODO: call checkForConflicts and then add a course object to the schedule or suggest other courses
         if(isConflict(c)){
-            //PRINT SOME SORT OF ERROR MESSAGE
-            //Need some sort of error to send back here, might turn into a try and catch block later
+            //TODO(Blanks): ADD ERROR HERE
             suggestAlternatives(c);
-            return -1; //FAIL CASE
+            return -1; //FAIL
         }else{
-            //ADD THE COURSE TO THE SCHEDULE
-            this.courses.add(c);
-            return 1; //SUCCESS CASE
+            for(Course course: courses){
+                if(course.getId().equals(c.getId())){
+                    //TODO(Blanks): ADD ERROR HERE
+                    return -1; //Already have course
+                }
+            }
+            courses.add(c);
+            return 1; //SUCCESS
 
         }
     }
 
     public int remove (Course c ){
-        //TODO: remove a course object from the schedule
 
-        if (courses.contains(c)){
-            //Probably need to check if removing this class goes below the min number of credits
-            courses.remove(c);
-        }else{
-            //Throw an error, you can't remove a class you don't have
-            //Stub print
-            System.out.println("Course not found");
+        for(Course course: courses){
+            if(course.getId().equals(c.getId())){
+                courses.remove(course);
+                return 1; //SUCCESS
+            }
         }
-        return -1;
+        //TODO(Blanks): ADD ERROR HERE
+        return -1; //FAIL
     }
 
     public int save (Schedule c, Student s){
