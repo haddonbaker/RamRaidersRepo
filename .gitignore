@@ -54,3 +54,4 @@ dist-ssr
 *.sln
 *.sw?
 frontend/frontend/src/mockData.js
+/schedules/
