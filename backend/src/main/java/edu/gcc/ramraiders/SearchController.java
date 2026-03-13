@@ -46,11 +46,24 @@ public class SearchController {
             // Schedule schedule = mapper.convertValue(body.get("schedule"), Schedule.class); // Use global schedule instead
             Course courseToAdd = mapper.convertValue(body.get("course"), Course.class);
 
-            int result = globalSchedule.add(courseToAdd);
-            if (result == 1) {
-                ctx.json(Map.of("status", "success", "schedule", globalSchedule));
-            } else {
-                ctx.status(400).json(Map.of("status", "error", "message", "Conflict or full capacity"));
+            String result = globalSchedule.add(courseToAdd);
+
+            switch (result) {
+                case "SUCCESS":
+                    ctx.json(Map.of("status", "success", "schedule", globalSchedule));
+                    break;
+                case "duplicate":
+                    ctx.status(400).json(Map.of("status", "error", "message", "Course is already in the schedule"));
+                    break;
+                case "full":
+                    ctx.status(400).json(Map.of("status", "error", "message", "Course is already at full capacity"));
+                    break;
+                case "overlap":
+                    ctx.status(400).json(Map.of("status", "error", "message", "Course overlaps with another scheduled course"));
+                    break;
+                default:
+                    ctx.status(400).json(Map.of("status", "error", "message", "Unknown error occurred"
+                    ));
             }
         });
 

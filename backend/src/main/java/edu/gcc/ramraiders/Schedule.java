@@ -23,22 +23,23 @@ public class Schedule {
     /**
      *
      * @param c The course to be added
-     * @return Returns 1 if successful and -1 if not --> Change to NULL
+     * @return Returns string with success or conflict type -  SUCCESS | duplicate | full | overlap
      */
-    public int add (Course c ){
-        if(isConflict(c)){
+    public String add (Course c ){
+        String result = ConflictType(c);
+        if(!result.equals("none")){
             //TODO(Blanks): ADD ERROR HERE
             suggestAlternatives(c);
-            return -1; //FAIL
+            return result; //FAIL
         }else{
             for(Course course: courses){
                 if(course.getId().equals(c.getId())){
                     //TODO(Blanks): ADD ERROR HERE
-                    return -1; //Already have course
+                    return "duplicate"; //Already have course
                 }
             }
             courses.add(c);
-            return 1; //SUCCESS
+            return "SUCCESS"; //SUCCESS
 
         }
     }
@@ -109,17 +110,17 @@ public class Schedule {
         }
     }
 
-    private boolean isConflict (Course c){
+    private String ConflictType (Course c){
         //TODO: check the user's current candidate schedule for conflicts with adding the course c
         //Checks the seats
         if(c.openSeats() <= 0){
-            return true;
+            return "full";
         }
         //Checks for time overlaps
         //Also I don't think we need to check for semester because I am assuming the scheduling is all for the next semster, but I can add quickly if we need
         for (Course.MeetingTime mt1 : c.meetingTimes()) {
-            for(int i = 0; i < courses.size(); i++) {
-                Course a =  courses.get(i);
+            for (int i = 0; i < courses.size(); i++) {
+                Course a = courses.get(i);
                 for (Course.MeetingTime mt2 : a.meetingTimes()) {
                     //Checks if on the same day otherwise doesn't matter
                     if (mt1.day() == mt2.day()) {
@@ -132,13 +133,12 @@ public class Schedule {
 
                         // Overlap condition
                         if (start1 < end2 && start2 < end1) {
-                            return true;
+                            return "overlap";
                         }
                     }
                 }
             }
         }
-
         //Checks if exceeds max number of non extra payed credits
         if((getTotalCredits() + c.credits()) > 18){
             //Trigger warning for taking over 18 credits
@@ -148,11 +148,12 @@ public class Schedule {
         }
 
         //Made it through all the checks must be correct
-        return false;
+        return "none";
     }
 
     private ArrayList<Course> suggestAlternatives(Course c){
         // TODO: take the course and schedule, find classes that are similar and do not conflict
+        // all that will have to happen here is to look for courses with the same course code
         return new ArrayList<Course>();
     }
 
