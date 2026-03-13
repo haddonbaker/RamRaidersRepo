@@ -181,6 +181,7 @@ public class CourseDB {
     private static Course parseCourse(Map<?, ?> obj) {
         try {
             return new Course(
+                    (String) obj.get("department") + obj.get("code") +"-"+obj.get("section"),
                     (String) obj.get("subject"),
                     (Integer) obj.get("number"),
                     parseSection(obj),
