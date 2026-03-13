@@ -55,14 +55,14 @@ public class SearchController {
         });
 
         app.post("/saveSchedule", ctx -> {
-            Student student = ctx.sessionAttribute("student");
-            Schedule schedule = ctx.bodyAsClass(Schedule.class);
-
+            //Student student = ctx.sessionAttribute("student");
+            //Schedule schedule = ctx.bodyAsClass(Schedule.class);
+            Student student = new Student("test","12345");
             if(student == null) {
                 ctx.status(401).json(Map.of("status", "error", "message", "Unauthorized: Please log in"));
                 return;
             }
-            int result = schedule.save(schedule, student);
+            int result = globalSchedule.save(globalSchedule, student);
 
             if (result == 1) {
                 ctx.status(200).json(java.util.Map.of("status", "success", "message", "Schedule saved successfully"));
