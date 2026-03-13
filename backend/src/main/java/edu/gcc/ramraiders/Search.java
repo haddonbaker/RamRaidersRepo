@@ -33,6 +33,8 @@ public class Search {
         if (filter != null && !filter.equals(currentFilter)) {
             System.out.println("Current filter: " + filter);
             currentFilter = filter;
+            filteredResults.clear();
+            filteredResults.addAll(results);   // reset to query results
             filteredResults.removeIf(course -> {
                 if ((!filter.departments().isEmpty() && !filter.departments().contains(course.department()))
                         || (!filter.codes().isEmpty() && !filter.codes().contains(course.code()))
@@ -45,6 +47,18 @@ public class Search {
                 if (filter.isAvailable() && course.openSeats() == 0) {
                     return true;
                 }
+                if (!filter.professors().isEmpty()) {
+                    boolean found = false;
+                    for (var pn : course.professorNames()) {
+                        for (var fp : filter.professors()) {
+                            if (pn.contains(fp)) {
+                                found = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!found) return true;
+                }
                 boolean fitsAnyTimeslot = fitsAnyTimeslot(filter, course);
                 return !fitsAnyTimeslot;
             });
@@ -56,26 +70,38 @@ public class Search {
         if (filter.timeslots().isEmpty()) {
             return true;
         }
-        boolean fitsAnyTimeslot = false;
-        for (Filter.Timeslot timeslot : filter.timeslots()) {
-            for (var meetingTime : course.meetingTimes()) {
+        if (course.meetingTimes().isEmpty()) {
+            return false;
+        }
+
+        for (var meetingTime : course.meetingTimes()) {
+
+            boolean matchFound = false;
+
+            for (Filter.Timeslot timeslot : filter.timeslots()) {
+
                 if (!timeslot.day().equals(meetingTime.day())) {
                     continue;
                 }
-                if (timeslot.length() < meetingTime.minutesLong()) {
-                    continue;
+
+                int meetStart = meetingTime.hour() * 60 + meetingTime.minute();
+                int meetEnd = meetStart + meetingTime.minutesLong();
+
+                int tsStart = timeslot.hour() * 60 + timeslot.minute();
+                int tsEnd = tsStart + timeslot.length();
+
+                if (meetStart >= tsStart && meetEnd <= tsEnd) {
+                    matchFound = true;
+                    break;
                 }
-                var meetStartSecs = (meetingTime.hour() * 3600) + (meetingTime.minute() * 60);
-                var meetEndSecs = meetStartSecs + meetingTime.minutesLong();
-                var tsBeginSecs = (timeslot.hour() * 3600) + (timeslot.minute() * 60);
-                var tsEndSecs = tsBeginSecs + timeslot.length();
-                if (tsBeginSecs < meetStartSecs || meetEndSecs > tsEndSecs) {
-                    continue;
-                }
-                fitsAnyTimeslot = true;
+            }
+
+            if (!matchFound) {
+                return false;
             }
         }
-        return fitsAnyTimeslot;
+
+        return true;
     }
 
     private void updateResultsFromQuery(String query) {
