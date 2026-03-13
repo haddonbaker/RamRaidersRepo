@@ -35,8 +35,14 @@ public class Schedule {
             for(Course course: courses){
                 if(course.getId().equals(c.getId())){
                     //TODO(Blanks): ADD ERROR HERE
-                    return "duplicate"; //Already have course
+                    return "duplicate"; //Already have courses
                 }
+                String parseId = course.department() + course.code();
+                if((course.department() + course.code()).equals(c.department()+c.code())){
+                    return "duplicate";
+                    //We might want a different return message here but it works for rn
+                }
+
             }
             courses.add(c);
             return "SUCCESS"; //SUCCESS
