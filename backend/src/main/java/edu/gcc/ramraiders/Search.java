@@ -104,6 +104,18 @@ public class Search {
         return true;
     }
 
+    // Gets any single-digit numbers from the query and treats them as credit hours
+
+    private static Set<Integer> extractCreditHoursFrommQuery(List<String> words) {
+        var credits = new HashSet<Integer>();
+        for (var w : words) {
+            if (w != null && w.length() == 1 && Character.isDigit(w.charAt(0))) {
+                credits.add(Character.getNumericValue(w.charAt(0)));
+            }
+        }
+        return credits;
+    }
+
     private void updateResultsFromQuery(String query) {
         var words = List.of(query.split("\\s+"));
         var queriedDepartments = new HashSet<String>();
@@ -117,6 +129,8 @@ public class Search {
         var queriedMeetingTimes = new HashSet<Course.MeetingTime>();
 
         results.clear();
+        // checks for any single digit numbers from the query and treats them as credit hours
+        var queriedCreditHours = new HashSet<Integer>(extractCreditHoursFrommQuery(words));
 
         for (int i = 0; i < words.size(); i++) {
             String word = words.get(i);
@@ -133,7 +147,6 @@ public class Search {
             if (isDept) {
                 continue;
             }
-            // check for code or year
             try {
                 int codeOrYear = Integer.parseInt(word);
                 if (courseDB.getPossibleYears().contains(codeOrYear)) {
@@ -240,6 +253,7 @@ public class Search {
             Queried depts: %s
             Queried codes: %s
             Queried sections: %s
+            Queried credit hours: %s
             Queried names: %s
             Queried semesters: %s
             Queried years: %s
@@ -247,7 +261,7 @@ public class Search {
             Queried meeting times: %s
             Queried professors: %s
             """,
-            queriedDepartments, queriedCodes, queriedSections, queriedNames, queriedSemesters, queriedYears,
+            queriedDepartments, queriedCodes, queriedSections, queriedCreditHours, queriedNames, queriedSemesters, queriedYears,
             queriedDays, queriedMeetingTimes, queriedProfessors);
 
         for (Course course : courseDB.getCourseList()) {
@@ -264,6 +278,9 @@ public class Search {
                 continue;
             }
             if (!queriedYears.isEmpty() && !queriedYears.contains(course.year())) {
+                continue;
+            }
+            if (!queriedCreditHours.isEmpty() && !queriedCreditHours.contains(course.credits())) {
                 continue;
             }
             if (!queriedNames.isEmpty()) {
