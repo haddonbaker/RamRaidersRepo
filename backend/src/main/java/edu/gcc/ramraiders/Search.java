@@ -105,8 +105,7 @@ public class Search {
     }
 
     // Gets any single-digit numbers from the query and treats them as credit hours
-
-    private static Set<Integer> extractCreditHoursFrommQuery(List<String> words) {
+    private static Set<Integer> extractCreditHoursFromQuery(List<String> words) {
         var credits = new HashSet<Integer>();
         for (var w : words) {
             if (w != null && w.length() == 1 && Character.isDigit(w.charAt(0))) {
@@ -130,7 +129,7 @@ public class Search {
 
         results.clear();
         // checks for any single digit numbers from the query and treats them as credit hours
-        var queriedCreditHours = new HashSet<Integer>(extractCreditHoursFrommQuery(words));
+        var queriedCreditHours = new HashSet<Integer>(extractCreditHoursFromQuery(words));
 
         for (int i = 0; i < words.size(); i++) {
             String word = words.get(i);
@@ -149,6 +148,12 @@ public class Search {
             }
             try {
                 int codeOrYear = Integer.parseInt(word);
+                
+                // Skip if it's a single digit, as that's treated as credit hours
+                if (word.length() == 1) {
+                    continue;
+                }
+
                 if (courseDB.getPossibleYears().contains(codeOrYear)) {
                     queriedYears.add(codeOrYear);
                     continue;
