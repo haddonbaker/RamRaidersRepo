@@ -39,7 +39,14 @@ public class Schedule {
                 }
                 String parseId = course.department() + course.code();
                 if((course.department() + course.code()).equals(c.department()+c.code())){
-                    return "duplicate";
+
+                    boolean courseIsLab = course.section() == 'L';
+                    boolean cIsLab = c.section() == 'L';
+
+                    // block if both are lectures or both labs
+                    if(!courseIsLab && !cIsLab){
+                        return "duplicate";
+                    }
                     //We might want a different return message here but it works for rn
                 }
 
