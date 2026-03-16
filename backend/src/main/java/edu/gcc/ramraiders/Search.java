@@ -26,7 +26,17 @@ public class Search {
     public Set<Course> search(String query, Filter filter) {
         // Apply query
         if (!query.equals(currentQuery)) {
-            updateResultsFromQuery(query);
+            results.clear();
+            filteredResults.clear();
+            if (query.isBlank()) {
+                results.addAll(courseDB.getCourseList());
+            } else {
+                updateResultsFromQuery(query);
+            }
+            // trigger re-filtering
+            currentQuery = query;
+            filteredResults.addAll(results);
+            currentFilter=null;
         }
 
         // Apply filters
@@ -89,8 +99,6 @@ public class Search {
         var queriedSemesters = new HashSet<Course.SemesterType>();
         var queriedDays = new HashSet<Course.Day>();
         var queriedMeetingTimes = new HashSet<Course.MeetingTime>();
-
-        results.clear();
 
         for (int i = 0; i < words.size(); i++) {
             String word = words.get(i);
@@ -188,6 +196,26 @@ public class Search {
                 queriedDays.add(Course.Day.Friday);
                 continue;
             }
+            // regex to check if word only contains the uppercase or lowercase characters M, T, W, R, F, S, U
+            if (word.matches("(?i)[MTWRFSU]+")) {
+                if (word.contains("M") || word.contains("m")) {
+                    queriedDays.add(Course.Day.Monday);
+                }
+                if (word.contains("T") || word.contains("t")) {
+                    queriedDays.add(Course.Day.Tuesday);
+                }
+                if (word.contains("W") || word.contains("w")) {
+                    queriedDays.add(Course.Day.Wednesday);
+                }
+                if (word.contains("R") || word.contains("r")) {
+                    queriedDays.add(Course.Day.Thursday);
+                }
+                if (word.contains("F") || word.contains("f")) {
+                    queriedDays.add(Course.Day.Friday);
+                }
+                // do nothing for S and U (saturday/sunday don't actually exist)
+                continue;
+            }
 
             // check for meeting times
             if (word.matches("^([01][0-9]|2[0-3]):[0-5][0-9]$")) {
@@ -243,7 +271,7 @@ public class Search {
             if (!queriedNames.isEmpty()) {
                 boolean found = false;
                 for (var name : queriedNames) {
-                    if (name.toLowerCase().contains(course.name().toLowerCase())) {
+                    if (course.name().toLowerCase().contains(name.toLowerCase())) {
                         found = true;
                         break;
                     }
@@ -295,11 +323,5 @@ public class Search {
             }
             results.add(course);
         }
-
-        currentQuery = query;
-        // Trigger re-filtering
-        filteredResults.clear();
-        filteredResults.addAll(results);
-        currentFilter = null;
     }
 }
