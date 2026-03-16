@@ -99,6 +99,7 @@ public class Search {
         var queriedSemesters = new HashSet<Course.SemesterType>();
         var queriedDays = new HashSet<Course.Day>();
         var queriedMeetingTimes = new HashSet<Course.MeetingTime>();
+        var queriedCreditHours = new HashSet<Integer>();
 
         for (int i = 0; i < words.size(); i++) {
             String word = words.get(i);
@@ -115,9 +116,13 @@ public class Search {
             if (isDept) {
                 continue;
             }
-            // check for code or year
+            // check for code, year, or credits
             try {
                 int codeOrYear = Integer.parseInt(word);
+                if (word.length() == 1) {
+                    queriedCreditHours.add(codeOrYear);
+                    continue;
+                }
                 if (courseDB.getPossibleYears().contains(codeOrYear)) {
                     queriedYears.add(codeOrYear);
                     continue;
@@ -248,9 +253,10 @@ public class Search {
             Queried days: %s
             Queried meeting times: %s
             Queried professors: %s
+            Queried credit hours: %s
             """,
             queriedDepartments, queriedCodes, queriedSections, queriedNames, queriedSemesters, queriedYears,
-            queriedDays, queriedMeetingTimes, queriedProfessors);
+            queriedDays, queriedMeetingTimes, queriedProfessors, queriedCreditHours);
 
         for (Course course : courseDB.getCourseList()) {
             if (!queriedDepartments.isEmpty() && !queriedDepartments.contains(course.department())) {
@@ -313,6 +319,18 @@ public class Search {
                 boolean found = false;
                 for (var pn : course.professorNames()) {
                     if (queriedProfessors.contains(pn)) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    continue;
+                }
+            }
+            if (!queriedCreditHours.isEmpty()) {
+                boolean found = false;
+                for (Integer credits : queriedCreditHours) {
+                    if (course.credits().equals(credits)) {
                         found = true;
                         break;
                     }
