@@ -26,15 +26,23 @@ public class Search {
     public Set<Course> search(String query, Filter filter) {
         // Apply query
         if (!query.equals(currentQuery)) {
-            updateResultsFromQuery(query);
+            results.clear();
+            filteredResults.clear();
+            if (query.isBlank()) {
+                results.addAll(courseDB.getCourseList());
+            } else {
+                updateResultsFromQuery(query);
+            }
+            // trigger re-filtering
+            currentQuery = query;
+            filteredResults.addAll(results);
+            currentFilter=null;
         }
 
         // Apply filters
         if (filter != null && !filter.equals(currentFilter)) {
             System.out.println("Current filter: " + filter);
             currentFilter = filter;
-            filteredResults.clear();
-            filteredResults.addAll(results);   // reset to query results
             filteredResults.removeIf(course -> {
                 if ((!filter.departments().isEmpty() && !filter.departments().contains(course.department()))
                         || (!filter.codes().isEmpty() && !filter.codes().contains(course.code()))
@@ -47,18 +55,6 @@ public class Search {
                 if (filter.isAvailable() && course.openSeats() == 0) {
                     return true;
                 }
-                if (!filter.professors().isEmpty()) {
-                    boolean found = false;
-                    for (var pn : course.professorNames()) {
-                        for (var fp : filter.professors()) {
-                            if (pn.contains(fp)) {
-                                found = true;
-                                break;
-                            }
-                        }
-                    }
-                    if (!found) return true;
-                }
                 boolean fitsAnyTimeslot = fitsAnyTimeslot(filter, course);
                 return !fitsAnyTimeslot;
             });
@@ -70,49 +66,26 @@ public class Search {
         if (filter.timeslots().isEmpty()) {
             return true;
         }
-        if (course.meetingTimes().isEmpty()) {
-            return false;
-        }
-
-        for (var meetingTime : course.meetingTimes()) {
-
-            boolean matchFound = false;
-
-            for (Filter.Timeslot timeslot : filter.timeslots()) {
-
+        boolean fitsAnyTimeslot = false;
+        for (Filter.Timeslot timeslot : filter.timeslots()) {
+            for (var meetingTime : course.meetingTimes()) {
                 if (!timeslot.day().equals(meetingTime.day())) {
                     continue;
                 }
-
-                int meetStart = meetingTime.hour() * 60 + meetingTime.minute();
-                int meetEnd = meetStart + meetingTime.minutesLong();
-
-                int tsStart = timeslot.hour() * 60 + timeslot.minute();
-                int tsEnd = tsStart + timeslot.length();
-
-                if (meetStart >= tsStart && meetEnd <= tsEnd) {
-                    matchFound = true;
-                    break;
+                if (timeslot.length() < meetingTime.minutesLong()) {
+                    continue;
                 }
-            }
-
-            if (!matchFound) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    // Gets any single-digit numbers from the query and treats them as credit hours
-    private static Set<Integer> extractCreditHoursFromQuery(List<String> words) {
-        var credits = new HashSet<Integer>();
-        for (var w : words) {
-            if (w != null && w.length() == 1 && Character.isDigit(w.charAt(0))) {
-                credits.add(Character.getNumericValue(w.charAt(0)));
+                var meetStartSecs = (meetingTime.hour() * 3600) + (meetingTime.minute() * 60);
+                var meetEndSecs = meetStartSecs + meetingTime.minutesLong();
+                var tsBeginSecs = (timeslot.hour() * 3600) + (timeslot.minute() * 60);
+                var tsEndSecs = tsBeginSecs + timeslot.length();
+                if (tsBeginSecs < meetStartSecs || meetEndSecs > tsEndSecs) {
+                    continue;
+                }
+                fitsAnyTimeslot = true;
             }
         }
-        return credits;
+        return fitsAnyTimeslot;
     }
 
     private void updateResultsFromQuery(String query) {
@@ -126,10 +99,7 @@ public class Search {
         var queriedSemesters = new HashSet<Course.SemesterType>();
         var queriedDays = new HashSet<Course.Day>();
         var queriedMeetingTimes = new HashSet<Course.MeetingTime>();
-
-        results.clear();
-        // checks for any single digit numbers from the query and treats them as credit hours
-        var queriedCreditHours = new HashSet<Integer>(extractCreditHoursFromQuery(words));
+        var queriedCreditHours = new HashSet<Integer>();
 
         for (int i = 0; i < words.size(); i++) {
             String word = words.get(i);
@@ -146,14 +116,13 @@ public class Search {
             if (isDept) {
                 continue;
             }
+            // check for code, year, or credits
             try {
                 int codeOrYear = Integer.parseInt(word);
-                
-                // Skip if it's a single digit, as that's treated as credit hours
                 if (word.length() == 1) {
+                    queriedCreditHours.add(codeOrYear);
                     continue;
                 }
-
                 if (courseDB.getPossibleYears().contains(codeOrYear)) {
                     queriedYears.add(codeOrYear);
                     continue;
@@ -232,6 +201,26 @@ public class Search {
                 queriedDays.add(Course.Day.Friday);
                 continue;
             }
+            // regex to check if word only contains the uppercase or lowercase characters M, T, W, R, F, S, U
+            if (word.matches("(?i)[MTWRFSU]+")) {
+                if (word.contains("M") || word.contains("m")) {
+                    queriedDays.add(Course.Day.Monday);
+                }
+                if (word.contains("T") || word.contains("t")) {
+                    queriedDays.add(Course.Day.Tuesday);
+                }
+                if (word.contains("W") || word.contains("w")) {
+                    queriedDays.add(Course.Day.Wednesday);
+                }
+                if (word.contains("R") || word.contains("r")) {
+                    queriedDays.add(Course.Day.Thursday);
+                }
+                if (word.contains("F") || word.contains("f")) {
+                    queriedDays.add(Course.Day.Friday);
+                }
+                // do nothing for S and U (saturday/sunday don't actually exist)
+                continue;
+            }
 
             // check for meeting times
             if (word.matches("^([01][0-9]|2[0-3]):[0-5][0-9]$")) {
@@ -258,16 +247,16 @@ public class Search {
             Queried depts: %s
             Queried codes: %s
             Queried sections: %s
-            Queried credit hours: %s
             Queried names: %s
             Queried semesters: %s
             Queried years: %s
             Queried days: %s
             Queried meeting times: %s
             Queried professors: %s
+            Queried credit hours: %s
             """,
-            queriedDepartments, queriedCodes, queriedSections, queriedCreditHours, queriedNames, queriedSemesters, queriedYears,
-            queriedDays, queriedMeetingTimes, queriedProfessors);
+            queriedDepartments, queriedCodes, queriedSections, queriedNames, queriedSemesters, queriedYears,
+            queriedDays, queriedMeetingTimes, queriedProfessors, queriedCreditHours);
 
         for (Course course : courseDB.getCourseList()) {
             if (!queriedDepartments.isEmpty() && !queriedDepartments.contains(course.department())) {
@@ -285,13 +274,10 @@ public class Search {
             if (!queriedYears.isEmpty() && !queriedYears.contains(course.year())) {
                 continue;
             }
-            if (!queriedCreditHours.isEmpty() && !queriedCreditHours.contains(course.credits())) {
-                continue;
-            }
             if (!queriedNames.isEmpty()) {
                 boolean found = false;
                 for (var name : queriedNames) {
-                    if (name.toLowerCase().contains(course.name().toLowerCase())) {
+                    if (course.name().toLowerCase().contains(name.toLowerCase())) {
                         found = true;
                         break;
                     }
@@ -341,13 +327,19 @@ public class Search {
                     continue;
                 }
             }
+            if (!queriedCreditHours.isEmpty()) {
+                boolean found = false;
+                for (Integer credits : queriedCreditHours) {
+                    if (course.credits().equals(credits)) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    continue;
+                }
+            }
             results.add(course);
         }
-
-        currentQuery = query;
-        // Trigger re-filtering
-        filteredResults.clear();
-        filteredResults.addAll(results);
-        currentFilter = null;
     }
 }
