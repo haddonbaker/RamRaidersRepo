@@ -43,6 +43,8 @@ public class Search {
         if (filter != null && !filter.equals(currentFilter)) {
             System.out.println("Current filter: " + filter);
             currentFilter = filter;
+            filteredResults.clear();
+            filteredResults.addAll(results);
             filteredResults.removeIf(course -> {
                 if ((!filter.departments().isEmpty() && !filter.departments().contains(course.department()))
                         || (!filter.codes().isEmpty() && !filter.codes().contains(course.code()))
