@@ -29,32 +29,34 @@ public class Schedule {
         String result = ConflictType(c);
         if(!result.equals("none")){
             //TODO(Blanks): ADD ERROR HERE
-            suggestAlternatives(c);
             return result; //FAIL
         }else{
-            for(Course course: courses){
-                if(course.getId().equals(c.getId())){
-                    //TODO(Blanks): ADD ERROR HERE
-                    return "duplicate"; //Already have courses
-                }
-                String parseId = course.department() + course.code();
-                if((course.department() + course.code()).equals(c.department()+c.code())){
-
-                    boolean courseIsLab = course.section() == 'L';
-                    boolean cIsLab = c.section() == 'L';
-
-                    // block if both are lectures or both labs
-                    if(!courseIsLab && !cIsLab){
-                        return "duplicate";
-                    }
-                    //We might want a different return message here but it works for rn
-                }
-
-            }
             courses.add(c);
             return "SUCCESS"; //SUCCESS
 
         }
+    }
+
+    public boolean isDuplicate(Course c){
+        for(Course course: courses){
+            if(course.getId().equals(c.getId())){
+                return true; //Already have courses
+            }
+            String parseId = course.department() + course.code();
+            if((course.department() + course.code()).equals(c.department()+c.code())){
+
+                boolean courseIsLab = course.section() == 'L';
+                boolean cIsLab = c.section() == 'L';
+
+                // block if both are lectures or both labs
+                if(!courseIsLab && !cIsLab){
+                    return true;
+                }
+                //We might want a different return message here but it works for rn
+            }
+
+        }
+        return false;
     }
 
     public int remove (Course c ){
@@ -129,6 +131,10 @@ public class Schedule {
         if(c.openSeats() <= 0){
             return "full";
         }
+
+        if (isDuplicate(c)){
+            return "duplicate";
+        }
         //Checks for time overlaps
         //Also I don't think we need to check for semester because I am assuming the scheduling is all for the next semster, but I can add quickly if we need
         for (Course.MeetingTime mt1 : c.meetingTimes()) {
@@ -162,12 +168,6 @@ public class Schedule {
 
         //Made it through all the checks must be correct
         return "none";
-    }
-
-    private ArrayList<Course> suggestAlternatives(Course c){
-        // TODO: take the course and schedule, find classes that are similar and do not conflict
-        // all that will have to happen here is to look for courses with the same course code
-        return new ArrayList<Course>();
     }
 
     public int getTotalCredits(){
