@@ -123,7 +123,7 @@ public class Schedule {
         }
     }
 
-    private String ConflictType (Course c){
+    public String ConflictType (Course c){
         //TODO: check the user's current candidate schedule for conflicts with adding the course c
         //Checks the seats
         if(c.openSeats() <= 0){
