@@ -102,5 +102,17 @@ public class SearchController {
         });
 
         app.get("/schedule", ctx -> ctx.json(globalSchedule));
+
+        app.post("/suggestAlternatives", ctx -> {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> body = ctx.bodyAsClass(Map.class);
+
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            Course course = mapper.convertValue(body.get("course"), Course.class);
+            Schedule schedule = mapper.convertValue(body.get("schedule"), Schedule.class);
+
+            Set<Course> alternatives = course.SuggestAlternatives(course, schedule);
+            ctx.json(alternatives);
+        });
     }
 }
