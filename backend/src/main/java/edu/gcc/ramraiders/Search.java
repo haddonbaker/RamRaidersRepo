@@ -33,10 +33,10 @@ public class Search {
             } else {
                 updateResultsFromQuery(query);
             }
-            // trigger re-filtering
             currentQuery = query;
+            // reset to trigger re-filtering
             filteredResults.addAll(results);
-            currentFilter=null;
+            currentFilter = null;
         }
 
         // Apply filters
@@ -76,6 +76,11 @@ public class Search {
         return filteredResults;
     }
 
+    /**
+     * @param filter The filter
+     * @param course The course
+     * @return Helper function to return whether if the course matches any one of the timeslots given by the filter
+     */
     private static boolean fitsAnyTimeslot(Filter filter, Course course) {
         if (filter.timeslots().isEmpty()) {
             return true;
@@ -108,6 +113,11 @@ public class Search {
         return true;
     }
 
+    /**
+     * Helper function to populate a list of courses from a text query
+     *
+     * @param query The query
+     */
     private void updateResultsFromQuery(String query) {
         var words = List.of(query.split("\\s+"));
         var queriedDepartments = new HashSet<String>();
@@ -121,6 +131,7 @@ public class Search {
         var queriedMeetingTimes = new HashSet<Course.MeetingTime>();
         var queriedCreditHours = new HashSet<Integer>();
 
+        // First, parse the query into sets for each category of query item
         for (int i = 0; i < words.size(); i++) {
             String word = words.get(i);
 
@@ -221,6 +232,7 @@ public class Search {
                 queriedDays.add(Course.Day.Friday);
                 continue;
             }
+            // also support matching for abbreviated multiple days such as TR, MWF
             // regex to check if word only contains the uppercase or lowercase characters M, T, W, R, F, S, U
             if (word.matches("(?i)[MTWRFSU]+")) {
                 if (word.contains("M") || word.contains("m")) {
@@ -241,7 +253,6 @@ public class Search {
                 // do nothing for S and U (saturday/sunday don't actually exist)
                 continue;
             }
-
             // check for meeting times
             if (word.matches("^([01][0-9]|2[0-3]):[0-5][0-9]$")) {
                 try {
@@ -255,29 +266,34 @@ public class Search {
                 } catch (Exception ignored) {
                 }
             }
-
-            // otherwise the query word must be for a course name
+            // if the word didn't match with any of the above categories, assume it is looking for part of a course name
             if (word.matches("^[a-zA-Z0-9]+$")) {
                 queriedNames.add(word);
             }
         }
-
+        // Log what is being queried
         System.out.printf(
-            """
-            Queried depts: %s
-            Queried codes: %s
-            Queried sections: %s
-            Queried names: %s
-            Queried semesters: %s
-            Queried years: %s
-            Queried days: %s
-            Queried meeting times: %s
-            Queried professors: %s
-            Queried credit hours: %s
-            """,
-            queriedDepartments, queriedCodes, queriedSections, queriedNames, queriedSemesters, queriedYears,
-            queriedDays, queriedMeetingTimes, queriedProfessors, queriedCreditHours);
+                """
+                        {
+                            query: %s
+                            departments: %s
+                            codes: %s
+                            sections: %s
+                            names: %s
+                            semesters: %s
+                            years: %s
+                            days: %s
+                            meeting times: %s
+                            professors: %s
+                            credit hours: %s
+                        }
+                        """,
+                query,
+                queriedDepartments, queriedCodes, queriedSections, queriedNames, queriedSemesters, queriedYears,
+                queriedDays, queriedMeetingTimes, queriedProfessors, queriedCreditHours);
 
+        // Now, actually obtain the courses using these sets created.
+        // In essence any course that is "in" each non-empty set is returned by the query.
         for (Course course : courseDB.getCourseList()) {
             if (!queriedDepartments.isEmpty() && !queriedDepartments.contains(course.department())) {
                 continue;
