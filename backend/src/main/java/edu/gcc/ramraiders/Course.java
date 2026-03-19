@@ -130,29 +130,42 @@ public record Course(
 
 
     public Set<Course> SuggestAlternatives(Course course, Schedule schedule){
-        //ToDo: complete this method
+
         Set<Course> alternatives = new HashSet<>();
+        Set<String> addedCourseIds = new HashSet<>();
         //after 5 courses the set will be returned
         int numCourses = 0;
-        //checks if the course has another section
-        for(Course c : SearchController.search.search(course.name+ " "+ course.department + " " + course.code, null)){
-            if(schedule.ConflictType(c).equals("none")){
-                numCourses++;
-                alternatives.add(c);
-                if(numCourses > 5){
-                    break;
+
+        String conflict = schedule.ConflictType(course);
+
+        if(!conflict.equals("duplicate")) {
+            //checks if the course has another section
+            for(Course c : SearchController.search.search(course.name+ " "+ course.department + " " + course.code, null)){
+                if(schedule.ConflictType(c).equals("none")){
+                    if (!addedCourseIds.contains(c.getId())) {
+                        alternatives.add(c);
+                        addedCourseIds.add(c.getId());
+                        numCourses++;
+                        if (numCourses >= 5) {
+                            break;
+                        }
+                    }
                 }
             }
         }
+
         if(numCourses < 5) {
             for (Course c : SearchController.search.search(course.department + " " + course.code.toString().charAt(0)+"00", null)) {
                 //Checks the courses that match the first number of the course code (ex. 100 and 111 would match)
                 //also checks if departments match
                 if (schedule.ConflictType(c).equals("none")) {
-                    numCourses++;
-                    alternatives.add(c);
-                    if (numCourses > 5) {
-                        break;
+                    if (!addedCourseIds.contains(c.getId())) {
+                        alternatives.add(c);
+                        addedCourseIds.add(c.getId());
+                        numCourses++;
+                        if (numCourses >= 5) {
+                            break;
+                        }
                     }
                 }
             }
@@ -161,10 +174,13 @@ public record Course(
             for (Course c : SearchController.search.search(course.department, null)) {
                 //Checks the courses that match just by department
                 if (schedule.ConflictType(c).equals("none")) {
-                    numCourses++;
-                    alternatives.add(c);
-                    if (numCourses > 5) {
-                        break;
+                    if (!addedCourseIds.contains(c.getId())) {
+                        alternatives.add(c);
+                        addedCourseIds.add(c.getId());
+                        numCourses++;
+                        if (numCourses >= 5) {
+                            break;
+                        }
                     }
                 }
             }

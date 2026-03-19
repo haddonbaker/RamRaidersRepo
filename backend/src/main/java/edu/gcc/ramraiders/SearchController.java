@@ -109,9 +109,9 @@ public class SearchController {
 
             com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
             Course course = mapper.convertValue(body.get("course"), Course.class);
-            Schedule schedule = mapper.convertValue(body.get("schedule"), Schedule.class);
-
-            Set<Course> alternatives = course.SuggestAlternatives(course, schedule);
+            
+            // Use globalSchedule instead of parsing from body
+            Set<Course> alternatives = course.SuggestAlternatives(course, globalSchedule);
             ctx.json(alternatives);
         });
     }
