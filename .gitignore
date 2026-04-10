@@ -6,6 +6,7 @@
 Thumbs.db
 # Java / IntelliJ build output
 **/out/
+**/bin/
 # Gradle
 **/.gradle/
 **/build/
