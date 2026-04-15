@@ -27,24 +27,31 @@ public class SearchController {
         SearchController.courseDB = courseDB;
 
         app.get("/courses", ctx -> {
+            Main.log.info("get /courses");
             List<Course> allCourses = courseDB.getCourseList();
             ctx.json(allCourses);
         });
 
         app.post("/search", ctx -> {
+            Main.log.info("post /search");
             // No error handling necessary: malformed JSON automatically returns a 400 error code with Javalin
             var request = ctx.bodyAsClass(SearchRequest.class);
             ctx.json(search.search(request.query, request.filter));
         });
 
-        app.get("/semesters", ctx -> ctx.json(
-            Arrays.stream(Course.SemesterType.values()).map(Enum::name).toList()
-        ));
+        app.get("/semesters", ctx -> {
+            Main.log.info("get /semesters");
+            ctx.json(Arrays.stream(Course.SemesterType.values()).map(Enum::name).toList());
+        });
 
-        app.get("/years", ctx -> ctx.json(SearchController.courseDB.getPossibleYears()));
+        app.get("/years", ctx -> {
+            Main.log.info("get /years");
+            ctx.json(SearchController.courseDB.getPossibleYears());
+        });
 
         // Returns only semester+year combinations that actually have courses, sorted chronologically.
         app.get("/terms", ctx -> {
+            Main.log.info("get /terms");
             List<String> semesterOrder = Arrays.stream(Course.SemesterType.values()).map(Enum::name).toList();
             List<String> terms = courseDB.getCourseList().stream()
                 .map(c -> c.semester().name() + "_" + c.year())
@@ -56,15 +63,26 @@ public class SearchController {
             ctx.json(terms);
         });
 
-        app.get("/departments", ctx -> ctx.json(SearchController.courseDB.getPossibleDepartments()));
+        app.get("/departments", ctx -> {
+            Main.log.info("get /departments");
+            ctx.json(SearchController.courseDB.getPossibleDepartments());
+        });
 
-        app.get("/credits", ctx -> ctx.json(SearchController.courseDB.getPossibleCredits()));
+        app.get("/credits", ctx -> {
+            Main.log.info("get /credits");
+            ctx.json(SearchController.courseDB.getPossibleCredits());
+        });
 
-        app.get("/professors", ctx-> ctx.json(SearchController.courseDB.getPossibleProfessors()));
+        app.get("/professors", ctx-> {
+            Main.log.info("get /professors");
+            ctx.json(SearchController.courseDB.getPossibleProfessors());
+        });
 
         app.post("/addToCalendar", ctx -> {
             @SuppressWarnings("unchecked")
             Map<String, Object> body = ctx.bodyAsClass(Map.class);
+
+            Main.log.info("post /addToCalendar");
 
             com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
             Course courseToAdd = mapper.convertValue(body.get("course"), Course.class);
@@ -99,6 +117,7 @@ public class SearchController {
                 ctx.status(401).json(Map.of("status", "error", "message", "Unauthorized: Please log in"));
                 return;
             }
+            Main.log.info("post /saveSchedule : student " + student.getUsername());
             Schedule schedule = getSchedule(ctx);
             int result = schedule.save(schedule, student);
 
@@ -113,6 +132,8 @@ public class SearchController {
             @SuppressWarnings("unchecked")
             Map<String, Object> body = ctx.bodyAsClass(Map.class);
 
+            Main.log.info("delete /removeFromCalendar");
+
             com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
             Course courseToRemove = mapper.convertValue(body.get("course"), Course.class);
             Schedule schedule = getSchedule(ctx);
@@ -125,11 +146,16 @@ public class SearchController {
             }
         });
 
-        app.get("/schedule", ctx -> ctx.json(getSchedule(ctx)));
+        app.get("/schedule", ctx -> {
+            Main.log.info("get /schedule");
+            ctx.json(getSchedule(ctx));
+        });
 
         app.post("/suggestAlternatives", ctx -> {
             @SuppressWarnings("unchecked")
             Map<String, Object> body = ctx.bodyAsClass(Map.class);
+
+            Main.log.info("post /suggestAlternatives");
 
             com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
             Course course = mapper.convertValue(body.get("course"), Course.class);
