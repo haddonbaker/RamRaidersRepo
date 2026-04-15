@@ -9,10 +9,10 @@ public class Log {
     public static final int LEVEL_WARN = 2;
     public static final int LEVEL_DEBUG = 3;
 
-    private static final String beginRedColor = "\\x1b[31m";
-    private static final String endColor = "\\x1b[0m";
-    private static final String beginGreenColor = "\\x1b[32m";
-    private static final String beginGrayColor = "\\x1b[37m";
+    private static final String beginRedColor = "\u001b[31m";
+    private static final String endColor = "\u001b[0m";
+    private static final String beginGreenColor = "\u001b[32m";
+    private static final String beginGrayColor = "\u001b[37m";
 
     java.io.PrintStream out;
     int level = LEVEL_INFO;
@@ -31,18 +31,18 @@ public class Log {
 
     public void error(String message) {
         if (level >= LEVEL_ERROR) {
-            out.println(LocalDateTime.now() + beginRedColor + message + endColor);
+            out.println("[" + LocalDateTime.now() + "] " + beginRedColor + message + endColor);
         }
     }
 
     public void info(String message) {
         if (level >= LEVEL_INFO) {
-            out.println(LocalDateTime.now() + beginGreenColor + message + endColor);
+            out.println("[" + LocalDateTime.now() + "] " + beginGreenColor + message + endColor);
         }
     }
     public void debug(String message) {
         if (level >= LEVEL_DEBUG) {
-            out.println(LocalDateTime.now() + beginGrayColor + message + endColor);
+            out.println("[" + LocalDateTime.now() + "] " + beginGrayColor + message + endColor);
         }
     }
 }
