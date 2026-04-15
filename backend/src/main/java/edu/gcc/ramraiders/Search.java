@@ -26,6 +26,7 @@ public class Search {
     public Set<Course> search(String query, Filter filter) {
         // Apply query
         if (!query.equals(currentQuery)) {
+            Main.log.debug("Search changing query to: " + currentQuery);
             results.clear();
             filteredResults.clear();
             if (query.isBlank()) {
@@ -41,7 +42,7 @@ public class Search {
 
         // Apply filters
         if (filter != null && !filter.equals(currentFilter)) {
-            System.out.println("Current filter: " + filter);
+            Main.log.debug("Search changing filter to: " + filter);
             currentFilter = filter;
             filteredResults.clear();
             filteredResults.addAll(results);

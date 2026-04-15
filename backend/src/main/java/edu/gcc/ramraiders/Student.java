@@ -31,11 +31,13 @@ public class Student {
 
     public int login(String username, String password){
         //TODO: check the user's credentials against the accounts that exist already
+        Main.log.info("Student " + username + " logged in successfully");
         return -1;
     }
 
     private int logout(){
         //TODO: clear username and password from variables
+        Main.log.info("Student " + username + " logged out successfully");
         return -1;
     }
 
