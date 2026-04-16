@@ -7,6 +7,7 @@ import java.util.*;
 public class SearchController {
     public static Search search;
     private static CourseDB courseDB;
+    private static ProfessorDB professorDB;
     private static final Map<String, Schedule> schedules = new HashMap<>();
 
     private record SearchRequest(String query, Filter filter) { }
@@ -22,9 +23,10 @@ public class SearchController {
         return schedules.computeIfAbsent(semester + "_" + year, k -> new Schedule());
     }
 
-    public static void registerRoutes(Javalin app, CourseDB courseDB) {
+    public static void registerRoutes(Javalin app, CourseDB courseDB, ProfessorDB professorDB) {
         search = new Search(courseDB);
         SearchController.courseDB = courseDB;
+        SearchController.professorDB = professorDB;
 
         app.get("/courses", ctx -> {
             Main.log.info("get /courses");
@@ -52,15 +54,7 @@ public class SearchController {
         // Returns only semester+year combinations that actually have courses, sorted chronologically.
         app.get("/terms", ctx -> {
             Main.log.info("get /terms");
-            List<String> semesterOrder = Arrays.stream(Course.SemesterType.values()).map(Enum::name).toList();
-            List<String> terms = courseDB.getCourseList().stream()
-                .map(c -> c.semester().name() + "_" + c.year())
-                .distinct()
-                .sorted(Comparator
-                    .comparingInt((String t) -> Integer.parseInt(t.split("_")[1]))
-                    .thenComparingInt(t -> semesterOrder.indexOf(t.split("_")[0])))
-                .toList();
-            ctx.json(terms);
+            ctx.json(SearchController.courseDB.getTerms());
         });
 
         app.get("/departments", ctx -> {
@@ -76,6 +70,23 @@ public class SearchController {
         app.get("/professors", ctx-> {
             Main.log.info("get /professors");
             ctx.json(SearchController.courseDB.getPossibleProfessors());
+        });
+
+        // Accepts a faculty name in course_data format ("Last, First M.") as the `name`
+        // query param and returns the matching RateMyProfessors entry, or 404 if not found.
+        app.get("/professorRating", ctx -> {
+            String name = ctx.queryParam("name");
+            Main.log.info("get /professorRating name=" + name);
+            if (name == null || name.isBlank()) {
+                ctx.status(400).json(Map.of("status", "error", "message", "Missing required query param: name"));
+                return;
+            }
+            var professor = SearchController.professorDB.findByCourseDataName(name);
+            if (professor == null) {
+                ctx.status(404).json(Map.of("status", "error", "message", "No rating found for: " + name));
+                return;
+            }
+            ctx.json(professor);
         });
 
         app.post("/addToCalendar", ctx -> {

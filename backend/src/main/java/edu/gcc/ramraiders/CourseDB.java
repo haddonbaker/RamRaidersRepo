@@ -169,6 +169,23 @@ public class CourseDB {
         return courseList;
     }
 
+    /**
+     * Returns only semester+year combinations that actually have courses, sorted chronologically
+     * (ascending by year, then by semester order within the year).
+     *
+     * @return Sorted list of term strings in "Semester_Year" format, e.g. "Fall_2024"
+     */
+    public List<String> getTerms() {
+        List<String> semesterOrder = Arrays.stream(Course.SemesterType.values()).map(Enum::name).toList();
+        return courseList.stream()
+            .map(c -> c.semester().name() + "_" + c.year())
+            .distinct()
+            .sorted(Comparator
+                .comparingInt((String t) -> Integer.parseInt(t.split("_")[1]))
+                .thenComparingInt(t -> semesterOrder.indexOf(t.split("_")[0])))
+            .toList();
+    }
+
 
     // Helper functions
 
