@@ -28,6 +28,13 @@ public class Main {
         }
         log.info("Successfully loaded course data");
 
+        var professorDB = ProfessorDB.init();
+        if (professorDB == null) {
+            log.error("Failed to load professor data");
+            System.exit(-1);
+        }
+        log.info("Successfully loaded professor data");
+
         Javalin app;
         try {
             app = Javalin.create(config -> {
@@ -43,7 +50,7 @@ public class Main {
         }
         log.info("Successfully started Javalin app");
         try {
-            SearchController.registerRoutes(app, courseDB);
+            SearchController.registerRoutes(app, courseDB, professorDB);
         } catch (Exception e) {
             log.error("Error registering routes: " + e);
             System.exit(-1);
