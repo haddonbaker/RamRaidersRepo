@@ -21,7 +21,7 @@ public class Student {
 
     private String advisorEmail;
     private String statusSheet;
-    private String[] major;
+    private String major;
     private String[] minor;
 
     // Schedules keyed by term, e.g. "Fall_2024"
@@ -100,6 +100,20 @@ public class Student {
 
     public void setMySchedule(Schedule s) {
         schedules.put("default", s);
+    }
+
+    public String getMajor() {
+        return major;
+    }
+
+    /**
+     * Updates the student's major and persists the change to disk.
+     *
+     * @return true on success
+     */
+    public boolean saveMajor(String newMajor) {
+        this.major = newMajor;
+        return StudentDB.save(this);
     }
 
     public String getUsername() {

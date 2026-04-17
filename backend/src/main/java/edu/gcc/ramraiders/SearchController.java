@@ -199,7 +199,33 @@ public class SearchController {
                 ctx.status(401).json(Map.of("status", "error", "message", "Invalid username or password"));
                 return;
             }
-            ctx.json(Map.of("status", "success", "username", student.getUsername()));
+            ctx.json(Map.of("status", "success", "username", student.getUsername(), "major", student.getMajor() != null ? student.getMajor() : ""));
+        });
+
+        app.patch("/updateMajor", ctx -> {
+            String username = ctx.queryParam("username");
+            if (username == null || username.isBlank()) {
+                ctx.status(401).json(Map.of("status", "error", "message", "Unauthorized: username required"));
+                return;
+            }
+            Student student = StudentDB.load(username);
+            if (student == null) {
+                ctx.status(404).json(Map.of("status", "error", "message", "Student not found"));
+                return;
+            }
+            @SuppressWarnings("unchecked")
+            Map<String, String> body = ctx.bodyAsClass(Map.class);
+            String major = body.get("major");
+            if (major == null || major.isBlank()) {
+                ctx.status(400).json(Map.of("status", "error", "message", "major is required"));
+                return;
+            }
+            Main.log.info("patch /updateMajor : student " + username + " -> " + major);
+            if (student.saveMajor(major)) {
+                ctx.json(Map.of("status", "success", "major", major));
+            } else {
+                ctx.status(500).json(Map.of("status", "error", "message", "Failed to save major"));
+            }
         });
 
         app.post("/logout", ctx -> {
@@ -215,7 +241,9 @@ public class SearchController {
                 ctx.status(401).json(Map.of("status", "error", "message", "Not logged in"));
                 return;
             }
-            ctx.json(Map.of("username", username));
+            Student student = StudentDB.load(username);
+            String major = (student != null && student.getMajor() != null) ? student.getMajor() : "";
+            ctx.json(Map.of("username", username, "major", major));
         });
 
         app.delete("/removeFromCalendar", ctx -> {
