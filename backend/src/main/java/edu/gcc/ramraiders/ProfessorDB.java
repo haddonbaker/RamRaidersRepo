@@ -91,4 +91,11 @@ public class ProfessorDB {
         if (trimmed.isEmpty()) return null;
         return trimmed.toLowerCase();
     }
+
+    /**
+     * Returns all professor entries loaded from professors.json.
+     */
+    public List<Map<String, Object>> getAllProfessors() {
+        return new ArrayList<>(byNormalizedName.values());
+    }
 }

@@ -89,6 +89,13 @@ public class SearchController {
             ctx.json(professor);
         });
 
+        app.get("/professorRatingGeneral", ctx -> {
+            Main.log.info("get /professorRatingGeneral");
+            ctx.json(SearchController.professorDB.getAllProfessors());
+        });
+
+
+
         app.post("/addToCalendar", ctx -> {
             @SuppressWarnings("unchecked")
             Map<String, Object> body = ctx.bodyAsClass(Map.class);
