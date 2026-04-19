@@ -11,16 +11,38 @@ public class SearchController {
     private static final Map<String, Schedule> schedules = new HashMap<>();
 
     private record SearchRequest(String query, Filter filter) { }
+    private record AuthRequest(String username, String password) { }
 
-    /** Returns a schedule key like "Fall_2024". Creates the schedule lazily if it doesn't exist. */
+    /**
+     * Returns the schedule for a given term, scoped to a user when a username query param is present.
+     * Key format: "username_Fall_2024" for logged-in users, "Fall_2024" for guests.
+     * On first access for a logged-in user, loads their previously saved schedule from disk.
+     */
     private static Schedule getSchedule(io.javalin.http.Context ctx) {
         String semester = ctx.queryParam("semester");
         String year = ctx.queryParam("year");
+        String username = ctx.queryParam("username");
         if (semester == null) semester = "Fall";
         if (year == null) year = "2024";
         try { Course.SemesterType.valueOf(semester); }
         catch (IllegalArgumentException e) { semester = "Fall"; }
-        return schedules.computeIfAbsent(semester + "_" + year, k -> new Schedule());
+
+        String termKey = semester + "_" + year;
+        boolean hasUser = username != null && !username.isBlank();
+        String scheduleKey = hasUser ? username + "_" + termKey : termKey;
+
+        final String finalTermKey = termKey;
+        final String finalUsername = username;
+        return schedules.computeIfAbsent(scheduleKey, k -> {
+            if (finalUsername != null && !finalUsername.isBlank()) {
+                Student student = StudentDB.load(finalUsername);
+                if (student != null) {
+                    Schedule saved = student.getSchedule(finalTermKey);
+                    if (saved != null) return saved;
+                }
+            }
+            return new Schedule();
+        });
     }
 
     public static void registerRoutes(Javalin app, CourseDB courseDB, ProfessorDB professorDB) {
@@ -128,22 +150,107 @@ public class SearchController {
         });
 
         app.post("/saveSchedule", ctx -> {
-            //Student student = ctx.sessionAttribute("student");
-            //Schedule schedule = ctx.bodyAsClass(Schedule.class);
-            Student student = new Student("test","12345");
-            if(student == null) {
-                ctx.status(401).json(Map.of("status", "error", "message", "Unauthorized: Please log in"));
+            String username = ctx.queryParam("username");
+            if (username == null || username.isBlank()) {
+                ctx.status(401).json(Map.of("status", "error", "message", "Unauthorized: username required"));
                 return;
             }
-            Main.log.info("post /saveSchedule : student " + student.getUsername());
-            Schedule schedule = getSchedule(ctx);
-            int result = schedule.save(schedule, student);
-
-            if (result == 1) {
-                ctx.status(200).json(java.util.Map.of("status", "success", "message", "Schedule saved successfully"));
-            } else {
-                ctx.status(400).json(java.util.Map.of("status", "error", "message", "Failed to save schedule"));
+            Student student = StudentDB.load(username);
+            if (student == null) {
+                ctx.status(401).json(Map.of("status", "error", "message", "Unauthorized: unknown user"));
+                return;
             }
+            Main.log.info("post /saveSchedule : student " + username);
+            // getSchedule uses the username query param to find the right in-memory schedule
+            Schedule schedule = getSchedule(ctx);
+            String semester = ctx.queryParam("semester");
+            String year = ctx.queryParam("year");
+            if (semester == null) semester = "Fall";
+            if (year == null) year = "2024";
+            String termKey = semester + "_" + year;
+            boolean result = student.saveSchedule(termKey, schedule);
+            if (result) {
+                ctx.status(200).json(Map.of("status", "success", "message", "Schedule saved successfully"));
+            } else {
+                ctx.status(400).json(Map.of("status", "error", "message", "Failed to save schedule"));
+            }
+        });
+
+        // --- Auth endpoints ---
+
+        app.post("/createAccount", ctx -> {
+            Main.log.info("post /createAccount");
+            var req = ctx.bodyAsClass(AuthRequest.class);
+            if (req.username() == null || req.username().isBlank()
+                    || req.password() == null || req.password().isBlank()) {
+                ctx.status(400).json(Map.of("status", "error", "message", "Username and password are required"));
+                return;
+            }
+            Student student = Student.createAccount(req.username(), req.password());
+            if (student == null) {
+                ctx.status(409).json(Map.of("status", "error", "message", "Username already exists"));
+                return;
+            }
+            ctx.status(201).json(Map.of("status", "success", "username", student.getUsername()));
+        });
+
+        app.post("/login", ctx -> {
+            Main.log.info("post /login");
+            var req = ctx.bodyAsClass(AuthRequest.class);
+            if (req.username() == null || req.password() == null) {
+                ctx.status(400).json(Map.of("status", "error", "message", "Username and password are required"));
+                return;
+            }
+            Student student = Student.login(req.username(), req.password());
+            if (student == null) {
+                ctx.status(401).json(Map.of("status", "error", "message", "Invalid username or password"));
+                return;
+            }
+            ctx.json(Map.of("status", "success", "username", student.getUsername(), "major", student.getMajor() != null ? student.getMajor() : ""));
+        });
+
+        app.patch("/updateMajor", ctx -> {
+            String username = ctx.queryParam("username");
+            if (username == null || username.isBlank()) {
+                ctx.status(401).json(Map.of("status", "error", "message", "Unauthorized: username required"));
+                return;
+            }
+            Student student = StudentDB.load(username);
+            if (student == null) {
+                ctx.status(404).json(Map.of("status", "error", "message", "Student not found"));
+                return;
+            }
+            @SuppressWarnings("unchecked")
+            Map<String, String> body = ctx.bodyAsClass(Map.class);
+            String major = body.get("major");
+            if (major == null || major.isBlank()) {
+                ctx.status(400).json(Map.of("status", "error", "message", "major is required"));
+                return;
+            }
+            Main.log.info("patch /updateMajor : student " + username + " -> " + major);
+            if (student.saveMajor(major)) {
+                ctx.json(Map.of("status", "success", "major", major));
+            } else {
+                ctx.status(500).json(Map.of("status", "error", "message", "Failed to save major"));
+            }
+        });
+
+        app.post("/logout", ctx -> {
+            Main.log.info("post /logout");
+            ctx.json(Map.of("status", "success", "message", "Logged out"));
+        });
+
+        // Checks whether a username still exists on disk (used to validate a cached login on page reload).
+        app.get("/me", ctx -> {
+            Main.log.info("get /me");
+            String username = ctx.queryParam("username");
+            if (username == null || username.isBlank() || !StudentDB.exists(username)) {
+                ctx.status(401).json(Map.of("status", "error", "message", "Not logged in"));
+                return;
+            }
+            Student student = StudentDB.load(username);
+            String major = (student != null && student.getMajor() != null) ? student.getMajor() : "";
+            ctx.json(Map.of("username", username, "major", major));
         });
 
         app.delete("/removeFromCalendar", ctx -> {
