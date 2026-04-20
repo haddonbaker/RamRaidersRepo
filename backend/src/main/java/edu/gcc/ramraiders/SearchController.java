@@ -94,23 +94,6 @@ public class SearchController {
             ctx.json(SearchController.courseDB.getPossibleProfessors());
         });
 
-        // Accepts a faculty name in course_data format ("Last, First M.") as the `name`
-        // query param and returns the matching RateMyProfessors entry, or 404 if not found.
-        app.get("/professorRating", ctx -> {
-            String name = ctx.queryParam("name");
-            Main.log.info("get /professorRating name=" + name);
-            if (name == null || name.isBlank()) {
-                ctx.status(400).json(Map.of("status", "error", "message", "Missing required query param: name"));
-                return;
-            }
-            var professor = SearchController.professorDB.findByCourseDataName(name);
-            if (professor == null) {
-                ctx.status(404).json(Map.of("status", "error", "message", "No rating found for: " + name));
-                return;
-            }
-            ctx.json(professor);
-        });
-
         app.get("/professorRatingGeneral", ctx -> {
             Main.log.info("get /professorRatingGeneral");
             ctx.json(SearchController.professorDB.getAllProfessors());

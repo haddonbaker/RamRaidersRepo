@@ -6,12 +6,7 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * Loads professors.json (RateMyProfessors data) and matches entries against
- * faculty names from course_data.json.
- *
- * <p>course_data uses "Last, First M." format; professors.json uses "First Last"
- * format. Matching is done by comparing last name and first name
- * case-insensitively, ignoring middle initials.</p>
+ * Loads professors.json (RateMyProfessors data) and exposes it for lookup and listing.
  */
 public class ProfessorDB {
 
@@ -50,35 +45,6 @@ public class ProfessorDB {
                 byNormalizedName.put(key, prof);
             }
         }
-    }
-
-    /**
-     * Looks up a professor by their course_data faculty name.
-     *
-     * @param courseDataName faculty name in "Last, First M." format
-     * @return the matching professor map from professors.json, or null if not found
-     */
-    public Map<String, Object> findByCourseDataName(String courseDataName) {
-        String key = normalizeCourseDataName(courseDataName);
-        if (key == null) return null;
-        return byNormalizedName.get(key);
-    }
-
-    /**
-     * Normalizes a course_data faculty name ("Last, First M.") to "firstname lastname".
-     * Returns null if the name cannot be parsed.
-     */
-    static String normalizeCourseDataName(String name) {
-        if (name == null) return null;
-        // Format: "Last, First M." or "Last, First"
-        int commaIdx = name.indexOf(',');
-        if (commaIdx < 0) return null;
-        String last = name.substring(0, commaIdx).trim();
-        String rest = name.substring(commaIdx + 1).trim();
-        // rest may be "First M." or "First" — take the first token
-        String first = rest.split("\\s+")[0];
-        if (last.isEmpty() || first.isEmpty()) return null;
-        return (first + " " + last).toLowerCase();
     }
 
     /**
