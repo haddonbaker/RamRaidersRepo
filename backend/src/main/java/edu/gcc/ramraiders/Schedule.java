@@ -8,6 +8,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Stack;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
@@ -18,6 +20,9 @@ public class Schedule {
     private int totalCredits;
 
     private ArrayList<String> errors = new ArrayList<>();
+
+    // Stores the courses that were just removed from the schedule in order for redo to work
+    private final Stack<Course> removedCourses = new Stack<>();
 
 
     /**
@@ -188,4 +193,25 @@ public class Schedule {
     }
 
 
+
+
+    public boolean undo() {
+        if (courses.isEmpty()) {
+            Main.log.info("No courses to undo");
+            return false;
+        }
+        Course removed = courses.removeLast();
+        removedCourses.push(removed);
+        return true;
+    }
+
+    public boolean redo() {
+        if (removedCourses.isEmpty()) {
+            Main.log.info("No courses to redo");
+            return false;
+        }
+        var course = removedCourses.pop();
+        courses.add(course);
+        return true;
+    }
 }
