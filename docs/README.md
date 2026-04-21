@@ -21,6 +21,7 @@ Make a new folder.
 <code>cd frontend/frontend</code>
 
 <code>npm install</code>
+<code>npm install @react-pdf/renderer</code>
 
 <code>npm run dev</code>
 

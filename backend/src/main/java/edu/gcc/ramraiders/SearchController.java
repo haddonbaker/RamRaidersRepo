@@ -113,6 +113,8 @@ public class SearchController {
 
             String result = schedule.add(courseToAdd);
 
+            Main.log.error(schedule.getCourses().toString());
+
             switch (result) {
                 case "SUCCESS":
                     ctx.json(Map.of("status", "success", "schedule", schedule));
@@ -218,6 +220,48 @@ public class SearchController {
             }
         });
 
+        app.patch("/updateDisplayName", ctx -> {
+            Main.log.info("patch /updateDisplayName");
+            String username = ctx.queryParam("username");
+            if (username == null || username.isBlank()) {
+                ctx.status(401).json(Map.of("status", "error", "message", "Unauthorized: username required"));
+                return;
+            }
+            Student student = StudentDB.load(username);
+            if (student == null) {
+                ctx.status(404).json(Map.of("status", "error", "message", "Student not found"));
+                return;
+            }
+            @SuppressWarnings("unchecked")
+            Map<String, String> body = ctx.bodyAsClass(Map.class);
+            String displayName = body.get("displayName");
+            if (displayName == null || displayName.isBlank()) {
+                ctx.status(400).json(Map.of("status", "error", "message", "Display name is required"));
+                return;
+            }
+            Main.log.info("patch /updateDisplayName : student " + student.getDisplayName() + " -> " + displayName);
+            if (student.saveDisplayName(displayName)) {
+                ctx.json(Map.of("status", "success", "displayName", displayName));
+            } else {
+                ctx.status(500).json(Map.of("status", "error", "message", "Failed to save display name"));
+            }
+        });
+
+        app.get("/getDisplayName", ctx -> {
+            Main.log.info("get /getDisplayName");
+            String username = ctx.queryParam("username");
+            if (username == null || username.isBlank()) {
+                ctx.status(401).json(Map.of("status", "error", "message", "Unauthorized: username required"));
+                return;
+            }
+            Student student = StudentDB.load(username);
+            if (student == null) {
+                ctx.status(404).json(Map.of("status", "error", "message", "Student not found"));
+                return;
+            }
+            ctx.json(Map.of("status", "success" , "displayName", student.getDisplayName()));
+        });
+
         app.post("/logout", ctx -> {
             Main.log.info("post /logout");
             ctx.json(Map.of("status", "success", "message", "Logged out"));
@@ -252,6 +296,26 @@ public class SearchController {
             } else {
                 ctx.status(400).json(Map.of("status", "error", "message", "Course not found in schedule"));
             }
+        });
+
+        app.post("/undo", ctx->{
+            @SuppressWarnings("unchecked")
+            var body = (Map<String, Object>)ctx.bodyAsClass(Map.class);
+            Main.log.info("post /undo");
+            var mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            var schedule = getSchedule(ctx);
+            schedule.undo();
+            ctx.json(Map.of("status", "success", "schedule", schedule));
+        });
+
+        app.post("/redo", ctx->{
+            @SuppressWarnings("unchecked")
+            var body = (Map<String, Object>)ctx.bodyAsClass(Map.class);
+            Main.log.info("post /undo");
+            var mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            var schedule = getSchedule(ctx);
+            schedule.redo();
+            ctx.json(Map.of("status", "success", "schedule", schedule));
         });
 
         app.get("/schedule", ctx -> {

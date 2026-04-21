@@ -23,6 +23,7 @@ public class Student {
     private String statusSheet;
     private String major;
     private String[] minor;
+    private String displayName;
 
     // Schedules keyed by term, e.g. "Fall_2024"
     private Map<String, Schedule> schedules = new HashMap<>();
@@ -32,6 +33,7 @@ public class Student {
 
     private Student(String username, String passwordHash, String salt) {
         this.username = username;
+        this.displayName = username;
         this.passwordHash = passwordHash;
         this.salt = salt;
     }
@@ -114,6 +116,15 @@ public class Student {
     public boolean saveMajor(String newMajor) {
         this.major = newMajor;
         return StudentDB.save(this);
+    }
+
+    public boolean saveDisplayName(String newDisplayName) {
+        this.displayName = newDisplayName;
+        return StudentDB.save(this);
+    }
+
+    public String getDisplayName() {
+        return this.displayName;
     }
 
     public String getUsername() {
