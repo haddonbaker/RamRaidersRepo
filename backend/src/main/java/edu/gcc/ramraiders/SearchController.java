@@ -18,6 +18,18 @@ public class SearchController {
      * Key format: "username_Fall_2024" for logged-in users, "Fall_2024" for guests.
      * On first access for a logged-in user, loads their previously saved schedule from disk.
      */
+    private static void persistIfLoggedIn(io.javalin.http.Context ctx, Schedule schedule) {
+        String username = ctx.queryParam("username");
+        if (username == null || username.isBlank()) return;
+        String semester = ctx.queryParam("semester");
+        String year = ctx.queryParam("year");
+        if (semester == null) semester = "Fall";
+        if (year == null) year = "2024";
+        String termKey = semester + "_" + year;
+        Student student = StudentDB.load(username);
+        if (student != null) student.saveSchedule(termKey, schedule);
+    }
+
     private static Schedule getSchedule(io.javalin.http.Context ctx) {
         String semester = ctx.queryParam("semester");
         String year = ctx.queryParam("year");
@@ -117,6 +129,7 @@ public class SearchController {
 
             switch (result) {
                 case "SUCCESS":
+                    persistIfLoggedIn(ctx, schedule);
                     ctx.json(Map.of("status", "success", "schedule", schedule));
                     break;
                 case "duplicate":
@@ -292,6 +305,7 @@ public class SearchController {
 
             int result = schedule.remove(courseToRemove);
             if (result == 1) {
+                persistIfLoggedIn(ctx, schedule);
                 ctx.json(Map.of("status", "success", "schedule", schedule));
             } else {
                 ctx.status(400).json(Map.of("status", "error", "message", "Course not found in schedule"));
@@ -305,6 +319,7 @@ public class SearchController {
             var mapper = new com.fasterxml.jackson.databind.ObjectMapper();
             var schedule = getSchedule(ctx);
             schedule.undo();
+            persistIfLoggedIn(ctx, schedule);
             ctx.json(Map.of("status", "success", "schedule", schedule));
         });
 
@@ -315,6 +330,7 @@ public class SearchController {
             var mapper = new com.fasterxml.jackson.databind.ObjectMapper();
             var schedule = getSchedule(ctx);
             schedule.redo();
+            persistIfLoggedIn(ctx, schedule);
             ctx.json(Map.of("status", "success", "schedule", schedule));
         });
 
