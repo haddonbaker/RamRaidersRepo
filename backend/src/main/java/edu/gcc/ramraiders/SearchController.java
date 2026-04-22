@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import edu.gcc.ramraiders.EmailUtil;
 
 public class SearchController {
     public static Search search;
