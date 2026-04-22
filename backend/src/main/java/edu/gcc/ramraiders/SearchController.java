@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import edu.gcc.ramraiders.EmailUtil;
 
 public class SearchController {
     public static Search search;
@@ -300,6 +301,52 @@ public class SearchController {
             Main.log.info("get /schedule");
             ctx.json(getSchedule(ctx));
         });
+
+        app.post("/sendScheduleToAdvisor", ctx -> {
+            Main.log.info("post /sendScheduleToAdvisor");
+
+            String username = ctx.formParam("username");
+            String semester = ctx.formParam("semester");
+            String year = ctx.formParam("year");
+
+            var file = ctx.uploadedFile("file");
+
+            if (file == null) {
+                ctx.status(400).json(Map.of(
+                        "status", "error",
+                        "message", "No file uploaded"
+                ));
+                return;
+            }
+
+            try {
+                byte[] pdfBytes = file.content().readAllBytes();
+
+                // ✅ hardcoded advisor email (Option 1)
+                String advisorEmail = "advisor@school.edu";
+
+                EmailUtil.sendScheduleEmail(
+                        advisorEmail,
+                        username,
+                        semester,
+                        year,
+                        pdfBytes
+                );
+
+                ctx.json(Map.of(
+                        "status", "success"
+                ));
+
+            } catch (Exception e) {
+                Main.log.error("Email failed: " + e.getMessage());
+
+                ctx.status(500).json(Map.of(
+                        "status", "error",
+                        "message", "Failed to send email"
+                ));
+            }
+        });
+
 
         app.post("/suggestAlternatives", ctx -> {
             @SuppressWarnings("unchecked")
