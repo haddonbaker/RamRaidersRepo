@@ -2,47 +2,32 @@ package edu.gcc.ramraiders;
 
 import io.javalin.Javalin;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class SearchController {
     public static Search search;
     private static CourseDB courseDB;
     private static ProfessorDB professorDB;
-    private static final Map<String, Schedule> schedules = new HashMap<>();
 
     private record SearchRequest(String query, Filter filter) { }
     private record AuthRequest(String username, String password) { }
 
-    /**
-     * Returns the schedule for a given term, scoped to a user when a username query param is present.
-     * Key format: "username_Fall_2024" for logged-in users, "Fall_2024" for guests.
-     * On first access for a logged-in user, loads their previously saved schedule from disk.
-     */
     private static Schedule getSchedule(io.javalin.http.Context ctx) {
-        String semester = ctx.queryParam("semester");
-        String year = ctx.queryParam("year");
-        String username = ctx.queryParam("username");
-        if (semester == null) semester = "Fall";
-        if (year == null) year = "2024";
-        try { Course.SemesterType.valueOf(semester); }
-        catch (IllegalArgumentException e) { semester = "Fall"; }
+        return ScheduleService.getSchedule(
+                ctx.queryParam("username"),
+                ctx.queryParam("semester"),
+                ctx.queryParam("year"));
+    }
 
-        String termKey = semester + "_" + year;
-        boolean hasUser = username != null && !username.isBlank();
-        String scheduleKey = hasUser ? username + "_" + termKey : termKey;
-
-        final String finalTermKey = termKey;
-        final String finalUsername = username;
-        return schedules.computeIfAbsent(scheduleKey, k -> {
-            if (finalUsername != null && !finalUsername.isBlank()) {
-                Student student = StudentDB.load(finalUsername);
-                if (student != null) {
-                    Schedule saved = student.getSchedule(finalTermKey);
-                    if (saved != null) return saved;
-                }
-            }
-            return new Schedule();
-        });
+    private static void persistIfLoggedIn(io.javalin.http.Context ctx, Schedule schedule) {
+        ScheduleService.persistIfLoggedIn(
+                ctx.queryParam("username"),
+                ctx.queryParam("semester"),
+                ctx.queryParam("year"),
+                schedule);
     }
 
     public static void registerRoutes(Javalin app, CourseDB courseDB, ProfessorDB professorDB) {
@@ -117,6 +102,7 @@ public class SearchController {
 
             switch (result) {
                 case "SUCCESS":
+                    persistIfLoggedIn(ctx, schedule);
                     ctx.json(Map.of("status", "success", "schedule", schedule));
                     break;
                 case "duplicate":
@@ -146,13 +132,8 @@ public class SearchController {
                 return;
             }
             Main.log.info("post /saveSchedule : student " + username);
-            // getSchedule uses the username query param to find the right in-memory schedule
             Schedule schedule = getSchedule(ctx);
-            String semester = ctx.queryParam("semester");
-            String year = ctx.queryParam("year");
-            if (semester == null) semester = "Fall";
-            if (year == null) year = "2024";
-            String termKey = semester + "_" + year;
+            String termKey = ScheduleService.buildTermKey(ctx.queryParam("semester"), ctx.queryParam("year"));
             boolean result = student.saveSchedule(termKey, schedule);
             if (result) {
                 ctx.status(200).json(Map.of("status", "success", "message", "Schedule saved successfully"));
@@ -292,6 +273,7 @@ public class SearchController {
 
             int result = schedule.remove(courseToRemove);
             if (result == 1) {
+                persistIfLoggedIn(ctx, schedule);
                 ctx.json(Map.of("status", "success", "schedule", schedule));
             } else {
                 ctx.status(400).json(Map.of("status", "error", "message", "Course not found in schedule"));
@@ -299,22 +281,18 @@ public class SearchController {
         });
 
         app.post("/undo", ctx->{
-            @SuppressWarnings("unchecked")
-            var body = (Map<String, Object>)ctx.bodyAsClass(Map.class);
             Main.log.info("post /undo");
-            var mapper = new com.fasterxml.jackson.databind.ObjectMapper();
             var schedule = getSchedule(ctx);
             schedule.undo();
+            persistIfLoggedIn(ctx, schedule);
             ctx.json(Map.of("status", "success", "schedule", schedule));
         });
 
         app.post("/redo", ctx->{
-            @SuppressWarnings("unchecked")
-            var body = (Map<String, Object>)ctx.bodyAsClass(Map.class);
-            Main.log.info("post /undo");
-            var mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            Main.log.info("post /redo");
             var schedule = getSchedule(ctx);
             schedule.redo();
+            persistIfLoggedIn(ctx, schedule);
             ctx.json(Map.of("status", "success", "schedule", schedule));
         });
 
