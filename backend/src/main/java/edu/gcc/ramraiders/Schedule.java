@@ -7,10 +7,13 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.Stack;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class Schedule {
@@ -21,9 +24,27 @@ public class Schedule {
 
     private ArrayList<String> errors = new ArrayList<>();
 
-    // Stores the courses that were just removed from the schedule in order for redo to work
-    private final Stack<Course> removedCourses = new Stack<>();
 
+    // Undo/redo system: maximum number of items in the undo/redo history
+
+    private final int MAX_UNDO_HISTORY = 20;
+
+    @JsonIgnore
+    private final Deque<Course> undoStack = new ArrayDeque<>();
+
+    @JsonIgnore
+    private final Deque<String> actionStack = new ArrayDeque<>(); // Stores "ADD" or "REMOVE"
+
+    @JsonIgnore
+    private final Deque<Course> redoStack = new ArrayDeque<>();
+
+    @JsonIgnore
+    private final Deque<String> redoActionStack = new ArrayDeque<>();
+
+    // This still needs to be here to keep old JSON accounts from loading without errors
+    @Deprecated
+    @SuppressWarnings("unused")
+    private final Stack<Course> removedCourses = new Stack<>();
 
     /**
      *
@@ -37,8 +58,12 @@ public class Schedule {
             return result; //FAIL
         }else{
             courses.add(c);
+            // Tony
+            pushToUndo(c, "ADD");
+            redoStack.clear();
+            redoActionStack.clear();
+            //
             return "SUCCESS"; //SUCCESS
-
         }
     }
 
@@ -69,6 +94,11 @@ public class Schedule {
         for(Course course: courses){
             if(course.getId().equals(c.getId())){
                 courses.remove(course);
+                // Tony
+                pushToUndo(c, "REMOVE");
+                redoStack.clear();
+                redoActionStack.clear();
+                //
                 return 1; //SUCCESS
             }
         }
@@ -192,26 +222,49 @@ public class Schedule {
         return courses;
     }
 
-
-
-
     public boolean undo() {
-        if (courses.isEmpty()) {
-            Main.log.info("No courses to undo");
+        if (undoStack.isEmpty()) {
             return false;
         }
-        Course removed = courses.removeLast();
-        removedCourses.push(removed);
+        Course c = undoStack.pop();
+        String action = actionStack.pop();
+
+        if (action.equals("ADD")) {
+            courses.remove(c);
+        } else {
+            courses.add(c);
+        }
+        if (redoStack.size() > MAX_UNDO_HISTORY){
+            redoStack.removeLast();
+            redoActionStack.removeLast();
+        }
+        redoStack.push(c);
+        redoActionStack.push(action);
         return true;
     }
 
     public boolean redo() {
-        if (removedCourses.isEmpty()) {
-            Main.log.info("No courses to redo");
+        if (redoStack.isEmpty()) {
             return false;
         }
-        var course = removedCourses.pop();
-        courses.add(course);
+        Course c = redoStack.pop();
+        String action = redoActionStack.pop();
+
+        if (action.equals("ADD")) {
+            courses.add(c);
+        } else {
+            courses.remove(c);
+        }
+        pushToUndo(c, action);
         return true;
+    }
+
+    private void pushToUndo(Course c, String action) {
+        if (undoStack.size() > MAX_UNDO_HISTORY) {
+            undoStack.removeLast();
+            actionStack.removeLast();
+        }
+        undoStack.push(c);
+        actionStack.push(action);
     }
 }
