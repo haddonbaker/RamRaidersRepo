@@ -51,7 +51,7 @@ public class CourseDB {
      *
      * @throws IOException if the course data cannot be loaded
      */
-    private CourseDB() throws IOException {
+    CourseDB() throws IOException {
         var mapper = new ObjectMapper();
         var data = mapper.readValue(Main.class.getResourceAsStream("/course_data.json"), Map.class);
         var classes = (ArrayList<?>) data.get("classes");
