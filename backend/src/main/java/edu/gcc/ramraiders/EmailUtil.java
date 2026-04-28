@@ -1,7 +1,10 @@
 package edu.gcc.ramraiders;
 
-import javax.mail.*;
-import javax.mail.internet.*;
+import jakarta.mail.*;
+import jakarta.mail.internet.*;
+import jakarta.activation.DataHandler;
+import jakarta.activation.DataSource;
+import jakarta.activation.ByteArrayDataSource;
 import java.util.Properties;
 
 public class EmailUtil {
@@ -15,7 +18,7 @@ public class EmailUtil {
     ) throws Exception {
 
         final String fromEmail = "yourappemail@gmail.com";
-        final String password = "your_app_password_here"; // Gmail App Password
+        final String password = "your_app_password_here";
 
         Properties props = new Properties();
         props.put("mail.smtp.auth", "true");
@@ -25,6 +28,7 @@ public class EmailUtil {
 
         Session session = Session.getInstance(props,
                 new Authenticator() {
+                    @Override
                     protected PasswordAuthentication getPasswordAuthentication() {
                         return new PasswordAuthentication(fromEmail, password);
                     }
@@ -32,16 +36,17 @@ public class EmailUtil {
 
         Message message = new MimeMessage(session);
         message.setFrom(new InternetAddress(fromEmail));
-        message.setRecipients(Message.RecipientType.TO,
-                InternetAddress.parse(toEmail));
+        message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
         message.setSubject("Schedule from " + username);
 
-        BodyPart textPart = new MimeBodyPart();
+        MimeBodyPart textPart = new MimeBodyPart();
         textPart.setText("Attached is the schedule for " + semester + " " + year);
 
         MimeBodyPart pdfPart = new MimeBodyPart();
+
+        DataSource dataSource = new ByteArrayDataSource(pdfBytes, "application/pdf");
+        pdfPart.setDataHandler(new DataHandler(dataSource));
         pdfPart.setFileName("schedule.pdf");
-        pdfPart.setContent(pdfBytes, "application/pdf");
 
         Multipart multipart = new MimeMultipart();
         multipart.addBodyPart(textPart);
