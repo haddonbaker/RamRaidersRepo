@@ -308,8 +308,17 @@ public class SearchController {
             String username = ctx.formParam("username");
             String semester = ctx.formParam("semester");
             String year = ctx.formParam("year");
+            String advisorEmail = ctx.formParam("advisorEmail");
 
             var file = ctx.uploadedFile("file");
+
+            if (advisorEmail == null || advisorEmail.isBlank()) {
+                ctx.status(400).json(Map.of(
+                        "status", "error",
+                        "message", "Advisor email is required"
+                ));
+                return;
+            }
 
             if (file == null) {
                 ctx.status(400).json(Map.of(
@@ -322,9 +331,6 @@ public class SearchController {
             try {
                 byte[] pdfBytes = file.content().readAllBytes();
 
-                // ✅ hardcoded advisor email (Option 1)
-                String advisorEmail = "advisor@school.edu";
-
                 EmailUtil.sendScheduleEmail(
                         advisorEmail,
                         username,
@@ -333,9 +339,7 @@ public class SearchController {
                         pdfBytes
                 );
 
-                ctx.json(Map.of(
-                        "status", "success"
-                ));
+                ctx.json(Map.of("status", "success"));
 
             } catch (Exception e) {
                 Main.log.error("Email failed: " + e.getMessage());
