@@ -18,7 +18,7 @@ public class EmailUtil {
     ) throws Exception {
 
         final String fromEmail = "blanksj673@gmail.com";
-        final String password = "rntq vyth mrxf weyq";
+        final String password = "rntqvythmrxfweyq";
 
         Properties props = new Properties();
         props.put("mail.smtp.auth", "true");
@@ -55,5 +55,6 @@ public class EmailUtil {
         message.setContent(multipart);
 
         Transport.send(message);
+        System.out.println("Email successfully sent to " + toEmail); where should i put this
     }
 }
