@@ -4,7 +4,7 @@ import jakarta.mail.*;
 import jakarta.mail.internet.*;
 import jakarta.activation.DataHandler;
 import jakarta.activation.DataSource;
-import jakarta.activation.ByteArrayDataSource;
+import jakarta.mail.util.ByteArrayDataSource;
 import java.util.Properties;
 
 public class EmailUtil {
@@ -44,8 +44,8 @@ public class EmailUtil {
 
         MimeBodyPart pdfPart = new MimeBodyPart();
 
-        DataSource dataSource = new ByteArrayDataSource(pdfBytes, "application/pdf");
-        pdfPart.setDataHandler(new DataHandler(dataSource));
+        DataSource source = new ByteArrayDataSource(pdfBytes, "application/pdf");
+        pdfPart.setDataHandler(new DataHandler(source));
         pdfPart.setFileName("schedule.pdf");
 
         Multipart multipart = new MimeMultipart();
