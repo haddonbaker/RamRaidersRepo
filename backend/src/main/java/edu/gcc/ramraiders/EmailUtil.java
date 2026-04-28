@@ -17,8 +17,8 @@ public class EmailUtil {
             byte[] pdfBytes
     ) throws Exception {
 
-        final String fromEmail = "yourappemail@gmail.com";
-        final String password = "your_app_password_here";
+        final String fromEmail = "blanksj673@gmail.com";
+        final String password = "rntq vyth mrxf weyq";
 
         Properties props = new Properties();
         props.put("mail.smtp.auth", "true");
