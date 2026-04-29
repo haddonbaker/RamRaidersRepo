@@ -29,6 +29,12 @@ public class EmailUtil {
         props.put("mail.smtp.host", "smtp.gmail.com");
         props.put("mail.smtp.port", "587");
 
+        props.put("mail.smtp.connectiontimeout", "10000"); // 10 sec
+        props.put("mail.smtp.timeout", "10000");
+        props.put("mail.smtp.writetimeout", "10000");
+
+        props.put("mail.debug", "true");
+
         Session session = Session.getInstance(props,
                 new Authenticator() {
                     @Override
@@ -58,7 +64,11 @@ public class EmailUtil {
         message.setContent(multipart);
 
         try{
+            System.out.println("BEFORE SEND");
+
             Transport.send(message);
+
+            System.out.println("AFTER SEND");
             System.out.println("Email successfully sent to " + toEmail);
         } catch(Exception e){
             e.printStackTrace();
