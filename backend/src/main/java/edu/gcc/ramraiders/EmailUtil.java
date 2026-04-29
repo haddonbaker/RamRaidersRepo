@@ -1,5 +1,6 @@
 package edu.gcc.ramraiders;
 
+import com.sun.jdi.connect.Transport;
 import jakarta.mail.*;
 import jakarta.mail.internet.*;
 import jakarta.activation.DataHandler;
@@ -54,7 +55,12 @@ public class EmailUtil {
 
         message.setContent(multipart);
 
-        Transport.send(message);
-        System.out.println("Email successfully sent to " + toEmail);
+        try{
+            Transport.send(message);
+            System.out.println("Email successfully sent to " + toEmail);
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+
     }
 }
