@@ -1,21 +1,27 @@
 package edu.gcc.ramraiders;
 
+import jakarta.mail.Transport;
 import jakarta.mail.*;
 import jakarta.mail.internet.*;
+import jakarta.activation.DataHandler;
+import jakarta.activation.DataSource;
+import jakarta.mail.util.ByteArrayDataSource;
 import java.util.Properties;
 
 public class EmailUtil {
 
     public static void sendScheduleEmail(
-            String to,
+            String toEmail,
             String username,
             String semester,
             String year,
             byte[] pdfBytes
     ) throws Exception {
 
-        String from = System.getenv("EMAIL");
-        String password = System.getenv("EMAIL_PASS");
+        System.out.println("sendScheduleEmail CALLED");
+
+        final String fromEmail = "blanksj673@gmail.com";
+        final String password = "nsotlxevjzrbttil";
 
         Properties props = new Properties();
         props.put("mail.smtp.auth", "true");
@@ -23,30 +29,50 @@ public class EmailUtil {
         props.put("mail.smtp.host", "smtp.gmail.com");
         props.put("mail.smtp.port", "587");
 
-        Session session = Session.getInstance(props, new Authenticator() {
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(from, password);
-            }
-        });
+        props.put("mail.smtp.connectiontimeout", "10000"); // 10 sec
+        props.put("mail.smtp.timeout", "10000");
+        props.put("mail.smtp.writetimeout", "10000");
+
+        props.put("mail.debug", "true");
+
+        Session session = Session.getInstance(props,
+                new Authenticator() {
+                    @Override
+                    protected PasswordAuthentication getPasswordAuthentication() {
+                        return new PasswordAuthentication(fromEmail, password);
+                    }
+                });
 
         Message message = new MimeMessage(session);
-        message.setFrom(new InternetAddress(from));
-        message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
-        message.setSubject("Schedule - " + username + " (" + semester + " " + year + ")");
+        message.setFrom(new InternetAddress(fromEmail));
+        message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
+        message.setSubject("Schedule from " + username);
 
         MimeBodyPart textPart = new MimeBodyPart();
-        textPart.setText("Attached is the student's schedule.");
+        textPart.setText("Attached is the schedule for " + semester + " " + year);
 
-        MimeBodyPart attachment = new MimeBodyPart();
-        attachment.setFileName("schedule.pdf");
-        attachment.setContent(pdfBytes, "application/pdf");
+        MimeBodyPart pdfPart = new MimeBodyPart();
+
+        DataSource source = new ByteArrayDataSource(pdfBytes, "application/pdf");
+        pdfPart.setDataHandler(new DataHandler(source));
+        pdfPart.setFileName("schedule.pdf");
 
         Multipart multipart = new MimeMultipart();
         multipart.addBodyPart(textPart);
-        multipart.addBodyPart(attachment);
+        multipart.addBodyPart(pdfPart);
 
         message.setContent(multipart);
 
-        Transport.send(message);
+        try{
+            System.out.println("BEFORE SEND");
+
+            Transport.send(message);
+
+            System.out.println("AFTER SEND");
+            System.out.println("Email successfully sent to " + toEmail);
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+
     }
 }
