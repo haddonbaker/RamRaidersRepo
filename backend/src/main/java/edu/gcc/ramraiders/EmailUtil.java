@@ -1,6 +1,6 @@
 package edu.gcc.ramraiders;
 
-import com.sun.jdi.connect.Transport;
+import jakarta.mail.Transport;
 import jakarta.mail.*;
 import jakarta.mail.internet.*;
 import jakarta.activation.DataHandler;
