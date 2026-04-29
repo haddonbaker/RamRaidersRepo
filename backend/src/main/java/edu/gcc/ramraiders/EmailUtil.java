@@ -18,6 +18,8 @@ public class EmailUtil {
             byte[] pdfBytes
     ) throws Exception {
 
+        System.out.println("sendScheduleEmail CALLED");
+
         final String fromEmail = "blanksj673@gmail.com";
         final String password = "nsotlxevjzrbttil";
 
